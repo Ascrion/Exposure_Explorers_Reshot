@@ -9,6 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_riverpod: ^2.6.1
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.7
+  url_launcher: ^6.2.5 # check for latest version
+
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +22,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+   - assets/icons/
+   - assets/images/
