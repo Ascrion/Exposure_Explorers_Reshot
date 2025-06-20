@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../services/video_player.dart';
+
 final currentPage = StateProvider<String>((ref) => 'HOME');
 final exposureSlider = StateProvider<double>((ref) => 0.0);
 
@@ -29,19 +31,19 @@ class HomePage extends ConsumerWidget {
             children: [
               Container(
                 color: Theme.of(context).colorScheme.primary,
-                width: width * 0.09,
+                width: width * 0.08,
                 height: height,
                 child: LeftSidebar(),
               ),
               Container(
                 color: Theme.of(context).colorScheme.tertiary,
-                width: width * 0.71,
+                width: width * 0.75,
                 height: height,
                 child: CentralBar(),
               ),
               Container(
                 color: Theme.of(context).colorScheme.primary,
-                width: width * 0.2,
+                width: width * 0.17,
                 height: height,
                 child: RightSidebar(),
               )
@@ -62,6 +64,8 @@ class LeftSidebar extends ConsumerWidget {
     final page = ref.watch(currentPage);
     final height = MediaQuery.of(context).size.height;
     final Uri url = Uri.parse('https://www.nitgoa.ac.in/');
+    // to control the home video
+    final isPlaying = ref.watch(isVideoPlayingProvider);
 
     return Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
       IconButton(
@@ -120,7 +124,30 @@ class LeftSidebar extends ConsumerWidget {
         ),
       ),
       SizedBox(
-        height: height * 0.6,
+        child: page == 'HOME'
+            ? IconButton(
+                onPressed: () {
+                  if (isPlaying) {
+                    ref.read(videoControllerProvider.notifier).pause();
+                  } else {
+                    ref.read(videoControllerProvider.notifier).play();
+                  }
+                },
+                icon: isPlaying
+                    ? Icon(
+                        Icons.videocam_off,
+                        size: 45,
+                        color: Colors.red,
+                      )
+                    : Icon(
+                        Icons.videocam,
+                        size: 45,
+                        color: Colors.green,
+                      ))
+            : SizedBox(),
+      ),
+      SizedBox(
+        height: height * 0.5,
       ),
       IconButton(
           onPressed: () {},
@@ -140,12 +167,12 @@ class CentralBar extends ConsumerWidget {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
-
         return Column(
           children: [
             SizedBox(
               width: width,
               height: height * 0.96,
+              child: CenterMain(),
             ),
             Container(
               width: width,
@@ -156,6 +183,65 @@ class CentralBar extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class CenterMain extends ConsumerWidget {
+  const CenterMain({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final page = ref.watch(currentPage);
+    final exposure = ref.watch(exposureSlider);
+
+    //changes exposure of content
+    Color overlayColor;
+    if (exposure < 0) {
+      final opacity = (-exposure / 10).clamp(0.0, 1.0);
+      overlayColor = Colors.black.withAlpha((opacity * 255).round());
+    } else if (exposure > 0) {
+      final opacity = (exposure / 10).clamp(0.0, 1.0);
+      overlayColor = Colors.white.withAlpha((opacity * 255).round());
+    } else {
+      overlayColor = Colors.transparent;
+    }
+    // based on the page, change central content
+    if (page == 'HOME') {
+      return Stack(
+        children: [HomePageContent(), Container(color: overlayColor)],
+      );
+    } else {
+      return Stack(
+        children: [HomePageContent(), Container(color: overlayColor)],
+      ); //default fallback
+    }
+  }
+}
+
+class HomePageContent extends ConsumerWidget {
+  const HomePageContent({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Stack(
+      children: [
+        SizedBox(
+          child: HeroVideo(assetPath: '../../assets/videos/Hero.mp4'),
+        ),
+        Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.all(10),
+          child: Text(
+            'Exposure Explorers \n is the official \n Photography & Videography \n Club of NIT Goa',
+            style: Theme.of(context)
+                .textTheme
+                .headlineLarge
+                ?.copyWith(color: Theme.of(context).colorScheme.onSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -275,28 +361,35 @@ class Menu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-   final current = ref.watch(currentPage);
-   final activeColor = Theme.of(context).colorScheme.secondary;
-   final defaultColor = Theme.of(context).colorScheme.onPrimary;
-   final defaultBG = Theme.of(context).colorScheme.primary;
-   final hoverColor =  Theme.of(context).colorScheme.outline;
+    final current = ref.watch(currentPage);
+    final activeColor = Theme.of(context).colorScheme.secondary;
+    final defaultColor = Theme.of(context).colorScheme.onPrimary;
+    final defaultBG = Theme.of(context).colorScheme.primary;
+    final hoverColor = Theme.of(context).colorScheme.outline;
 
-return Column(
-  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  children: [
-    for (final label in ['HOME', 'GALLERY', 'EVENTS', 'HALL OF FAME', 'TEAM', 'CONTACT'])
-      _NavItem(
-        label: label,
-        isActive: current == label,
-        onTap: () => ref.read(currentPage.notifier).state = label,
-        activeColor: activeColor,
-        defaultColor: defaultColor,
-        defaultBG: defaultBG,
-        hoverColor:hoverColor,
-        context: context,
-      ),
-  ],
-);
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        for (final label in [
+          'HOME',
+          'GALLERY',
+          'EVENTS',
+          'HALL OF FAME',
+          'TEAM',
+          'CONTACT'
+        ])
+          _NavItem(
+            label: label,
+            isActive: current == label,
+            onTap: () => ref.read(currentPage.notifier).state = label,
+            activeColor: activeColor,
+            defaultColor: defaultColor,
+            defaultBG: defaultBG,
+            hoverColor: hoverColor,
+            context: context,
+          ),
+      ],
+    );
   }
 }
 
@@ -327,17 +420,15 @@ class _NavItem extends StatefulWidget {
 
 class _NavItemState extends State<_NavItem> {
   bool _isHovered = false;
-  
+
   @override
   Widget build(BuildContext context) {
     var color = widget.defaultColor;
-    if (widget.isActive){
-       color = widget.activeColor;
-    }
-    else if (_isHovered){
+    if (widget.isActive) {
+      color = widget.activeColor;
+    } else if (_isHovered) {
       color = widget.hoverColor;
-    }
-    else{
+    } else {
       color = widget.defaultColor;
     }
 
@@ -346,9 +437,9 @@ class _NavItemState extends State<_NavItem> {
       child: InkWell(
         onTap: widget.onTap,
         onHover: (hovering) => setState(() => _isHovered = hovering),
-         hoverColor: Colors.transparent,
-  splashColor: Colors.transparent,   // 👈 disables ripple
-  highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent, // 👈 disables ripple
+        highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(

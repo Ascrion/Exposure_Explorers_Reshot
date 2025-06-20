@@ -13,6 +13,7 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.7
   url_launcher: ^6.2.5 # check for latest version
+  video_player: ^2.7.0 
 
 
 dev_dependencies:
@@ -25,3 +26,4 @@ flutter:
   assets:
    - assets/icons/
    - assets/images/
+   - assets/videos/

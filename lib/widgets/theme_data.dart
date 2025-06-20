@@ -26,9 +26,9 @@ final ThemeData customTheme = ThemeData(
 
 textTheme: TextTheme(
   headlineLarge: GoogleFonts.playfairDisplay(
-    fontSize: 32,
+    fontSize: 50,
     fontWeight: FontWeight.w700, // Bold
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
   ),
   labelLarge: GoogleFonts.lora(
     fontSize: 25,
