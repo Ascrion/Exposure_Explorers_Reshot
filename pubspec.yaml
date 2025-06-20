@@ -14,6 +14,7 @@ dependencies:
   flutter_svg: ^2.0.7
   url_launcher: ^6.2.5 # check for latest version
   video_player: ^2.7.0 
+  http: ^1.4.0
 
 
 dev_dependencies:
