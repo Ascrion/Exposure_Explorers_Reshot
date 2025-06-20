@@ -63,7 +63,7 @@ class LeftSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final page = ref.watch(currentPage);
     final height = MediaQuery.of(context).size.height;
-    final Uri url = Uri.parse('https://www.nitgoa.ac.in/');
+    final Uri url = Uri.parse('https://www.nitgoa.ac.in/'); 
     // to control the home video
     final isPlaying = ref.watch(isVideoPlayingProvider);
 
