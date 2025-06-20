@@ -25,26 +25,31 @@ final ThemeData customTheme = ThemeData(
   ),
 
 textTheme: TextTheme(
-  headlineLarge: GoogleFonts.playfairDisplay(
+  headlineLarge: GoogleFonts.playfairDisplay().copyWith(
     fontSize: 50,
-    fontWeight: FontWeight.w700, // Bold
+    fontWeight: FontWeight.w700,
     letterSpacing: 1.5,
+    fontFamilyFallback: ['NotoSans'], // fallback
   ),
-  labelLarge: GoogleFonts.lora(
+  labelLarge: GoogleFonts.lora().copyWith(
     fontSize: 25,
-    fontWeight: FontWeight.w400, // Regular
+    fontWeight: FontWeight.w400,
     height: 1.5,
+    fontFamilyFallback: ['NotoSans'],
   ),
-  labelMedium: GoogleFonts.lora(
+  labelMedium: GoogleFonts.lora().copyWith(
     fontSize: 18,
-    fontWeight: FontWeight.w400, // Regular
+    fontWeight: FontWeight.w400,
     height: 1.5,
+    fontFamilyFallback: ['NotoSans'],
   ),
-  bodyMedium: GoogleFonts.lora(
+  bodyMedium: GoogleFonts.lora().copyWith(
     fontSize: 16,
-    fontWeight: FontWeight.w400, // Regular
+    fontWeight: FontWeight.w400,
     height: 1.5,
+    fontFamilyFallback: ['NotoSans'],
   ),
 ),
+
 
 );

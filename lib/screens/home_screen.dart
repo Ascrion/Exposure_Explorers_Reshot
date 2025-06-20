@@ -118,7 +118,7 @@ class LeftSidebar extends ConsumerWidget {
           );
         },
         child: Image.asset(
-          '../../assets/images/NITG_White.png',
+          'assets/images/NITG_White.png',
           width: 45,
           height: 45,
         ),
@@ -227,7 +227,7 @@ class HomePageContent extends ConsumerWidget {
     return Stack(
       children: [
         SizedBox(
-          child: HeroVideo(assetPath: '../../assets/videos/Hero.mp4'),
+          child: HeroVideo(assetPath: 'assets/videos/Hero.mp4'),
         ),
         Container(
           alignment: Alignment.center,
@@ -302,7 +302,7 @@ class RightSidebar extends ConsumerWidget {
             SizedBox(
               width: width,
               height: height * 0.2,
-              child: Image.asset('../../assets/images/logo.png', width: width),
+              child: Image.asset('assets/images/logo.png', width: width),
             ),
             Container(
               decoration: BoxDecoration(
