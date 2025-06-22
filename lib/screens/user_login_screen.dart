@@ -1,3 +1,4 @@
+import 'package:exposure_explorer_reshot/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -116,7 +117,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
   }
 }
-// function with riverpod support
+// On Authorization move to Admin Page
 void authenticator(WidgetRef ref, String username, String password) async {
   final response = await http.post(
   Uri.parse('https://password-api.navodiths.workers.dev/admin'), 
@@ -124,4 +125,10 @@ void authenticator(WidgetRef ref, String username, String password) async {
   body: jsonEncode({'username': username, 'password': password}),
   ); 
   ref.read(loginResult.notifier).state = response.body;
+
+  // If login successful move to admin page
+  if (response.statusCode == 200) {
+    ref.read(currentPage.notifier).state = 'ADMIN';
+}
+
 }
