@@ -1,13 +1,15 @@
 import 'package:exposure_explorer_reshot/screens/user_login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import 'video_player.dart';
 
 final currentPage = StateProvider<String>((ref) => 'HOME');
 final exposureSlider = StateProvider<double>((ref) => 0.0);
+final userVideoChoice = StateProvider<bool>((ref) => true);
 
 // Pass current time for the clock and rebuild the widget
 final currentTime = StreamProvider<String>((ref) async* {
@@ -17,8 +19,6 @@ final currentTime = StreamProvider<String>((ref) async* {
     yield DateTime.now().toString();
   }
 });
-
-//Play video after screen switches back to home (TBD)
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -133,8 +133,10 @@ class LeftSidebar extends ConsumerWidget {
                 onPressed: () {
                   if (isPlaying) {
                     ref.read(videoControllerProvider.notifier).pause();
+                    ref.read(userVideoChoice.notifier).state = false;
                   } else {
                     ref.read(videoControllerProvider.notifier).play();
+                    ref.read(userVideoChoice.notifier).state = true;
                   }
                 },
                 icon: isPlaying
@@ -225,6 +227,7 @@ class CenterMain extends ConsumerWidget {
       return Stack(
         children: [HomePageContent(), Container(color: overlayColor)],
       );
+
     } else if (page == 'USER') {
       return Stack(
         children: [UserPageContent()], //No Exposure Control
@@ -237,6 +240,8 @@ class CenterMain extends ConsumerWidget {
   }
 }
 
+
+
 class UserPageContent extends ConsumerWidget {
   const UserPageContent({super.key});
 
@@ -246,26 +251,36 @@ class UserPageContent extends ConsumerWidget {
   }
 }
 
-class HomePageContent extends ConsumerWidget {
+class HomePageContent extends HookConsumerWidget {
   const HomePageContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final videoChoice = ref.watch(userVideoChoice);
+    final controller = ref.read(videoControllerProvider.notifier);
+
+    useEffect(() {
+      Future.delayed(const Duration(seconds: 1), () {
+        if (videoChoice) {
+          controller.play();
+        } else {
+          controller.pause();
+        }
+      });
+      return null;
+    }, [videoChoice]);
+
     return Stack(
       children: [
-        SizedBox(
-          child: HeroVideo(assetPath: 'assets/videos/Hero.mp4'),
-        ),
-        Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(10),
+        const HeroVideo(assetPath: 'assets/videos/Hero.mp4'),
+        Center(
           child: Text(
             'Exposure Explorers \n is the official \n Photography & Videography \n Club of NIT Goa',
+            textAlign: TextAlign.center,
             style: Theme.of(context)
                 .textTheme
                 .headlineLarge
                 ?.copyWith(color: Theme.of(context).colorScheme.onSecondary),
-            textAlign: TextAlign.center,
           ),
         ),
       ],
