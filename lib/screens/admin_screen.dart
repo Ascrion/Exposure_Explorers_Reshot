@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 final adminPageChoice = StateProvider<String>((ref) => '');
-final gDriveLink = StateProvider<String>((ref) => '');
+final gDriveDetails = StateProvider<List<String>>((ref) => ['loading','loading']); // Default case to prevent out of index crashes
 
 class AdminPage extends ConsumerWidget {
   const AdminPage({super.key});
@@ -153,7 +153,7 @@ class AdminHomePage extends ConsumerWidget {
             'Config',
             style: subheaderTextStyle,
           ),
-          subtitle: Text('Change G-Drive Link'),
+          subtitle: Text('Change G-Drive & Drive API Links'),
           trailing: Icon(Icons.arrow_forward),
           onTap: () {
             ref.read(adminPageChoice.notifier).state = 'AdminConfig';
@@ -229,11 +229,12 @@ class AdminConfig extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final String link = ref.watch(gDriveLink);
+    final  data = ref.watch(gDriveDetails);
 
     // Only call once on first build
     useEffect(() {
-      syncGDriveLink(ref, 'get', '');
+      syncGDriveLink(ref, 'get', '','FolderLink');
+      syncGDriveLink(ref, 'get', '', 'APILink');
       return null;
     }, []); // Empty dependency list means: run once
 
@@ -250,10 +251,10 @@ class AdminConfig extends HookConsumerWidget {
         ListTile(
           leading: Icon(Icons.add_to_drive),
           title: Text(
-            'G-Drive Link',
+            'G-Drive Folder Link',
             style: subheaderTextStyle,
           ),
-          subtitle: Text(link, style: bodyTextStyle),
+          subtitle: Text(data[0], style: bodyTextStyle),
           trailing: TextButton(
             onPressed: () {
               final controller = TextEditingController(text: '');
@@ -278,7 +279,7 @@ class AdminConfig extends HookConsumerWidget {
                       onPressed: () {
                         final newLink = controller.text.trim();
                         if (newLink.isNotEmpty) {
-                          syncGDriveLink(ref, 'set', newLink);
+                          syncGDriveLink(ref, 'set', newLink,'FolderLink');
                         }
                         Navigator.pop(context);
                       },
@@ -294,45 +295,122 @@ class AdminConfig extends HookConsumerWidget {
             },
             child: Text('Change G-Drive Link?', style: bodyTextStyle),
           ),
-        )
+        ),
+        // API link
+        ListTile(
+          leading: Icon(Icons.add_to_drive),
+          title: Text(
+            'Drive API link',
+            style: subheaderTextStyle,
+          ),
+          subtitle: Text(data[1], style: bodyTextStyle),
+          trailing: TextButton(
+            onPressed: () {
+              final controller = TextEditingController(text: '');
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: Text('Enter new link:', style: subheaderTextStyle),
+                  content: TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                        labelText: 'New link..', labelStyle: bodyTextStyle),
+                    style: bodyTextStyle,
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        final newLink = controller.text.trim();
+                        if (newLink.isNotEmpty) {
+                          syncGDriveLink(ref, 'set', newLink,'APILink');
+                        }
+                        Navigator.pop(context);
+                      },
+                      child: Text('Save',
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .inverseSurface)),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: Text('Change API Link?', style: bodyTextStyle),
+          ),
+        ),
       ],
     );
   }
 }
 
-// Get or Set G Drive Link
-void syncGDriveLink(WidgetRef ref, operation, link) async {
+// Get or Set G Drive Link & DriveAPI link
+void syncGDriveLink(WidgetRef ref, operation,link,mode) async {
+  String keyName;
+  int modeSelect;
+
+  if (mode == 'FolderLink'){
+    keyName = 'gdrivelink';
+    modeSelect = 0;
+  }
+  else{
+    keyName = 'driveApi';
+    modeSelect = 1;
+  }
+
   if (operation == 'get') {
     final res = await http.get(
       Uri.parse(
-          'https://admin-info-api.navodiths.workers.dev/config/gdrive/get?key=gdrivelink'), //change key
+          'https://admin-info-api.navodiths.workers.dev/config/gdrive/get?key=$keyName'), //change key
     );
 
     if (res.statusCode == 200) {
       //json decode first
       final data = jsonDecode(res.body);
       final val = data['value'];
-      ref.read(gDriveLink.notifier).state = val;
+
+      final current = ref.read(gDriveDetails.notifier).state;
+      final updated = [...current];
+      updated[modeSelect] = val;
+      ref.read(gDriveDetails.notifier).state = updated;
+
     } else {
-      ref.read(gDriveLink.notifier).state = 'No link Set';
+      final current = ref.read(gDriveDetails.notifier).state;
+      final updated = [...current];
+      updated[modeSelect] = 'No link set';
+      ref.read(gDriveDetails.notifier).state = updated;
     }
   } else {
     final response = await http.post(
       Uri.parse(
           'https://admin-info-api.navodiths.workers.dev/config/gdrive/put'),
       headers: {'Content-Type': 'application/json'}, // tell it is json
-      body: jsonEncode({'key': 'gdrivelink', 'value': link}),
+      body: jsonEncode({'key': keyName, 'value': link}),
     );
     if (response.statusCode == 201) {
-      ref.read(gDriveLink.notifier).state =
-          link; // To let user know that link successfully changed
+      final current = ref.read(gDriveDetails.notifier).state;
+      final updated = [...current];
+      updated[modeSelect] = link;
+      ref.read(gDriveDetails.notifier).state = updated;
     } else {
-      ref.read(gDriveLink.notifier).state = 'Some Error has occured';
+      final current = ref.read(gDriveDetails.notifier).state;
+      final updated = [...current];
+      updated[modeSelect] = 'Some error has occured';
+      ref.read(gDriveDetails.notifier).state = updated;
     }
   }
 }
+
 //curl "https://admin-info-api.navodiths.workers.dev/config/gdrive/get?key=gdrivelink"
 
 // curl -X POST https://admin-info-api.navodiths.workers.dev/config/gdrive/put \
 //   -H "Content-Type: application/json" \
 //   -d '{"key": "gdrivelink", "value": "trial"}'
+
+// AIzaSyBYh3EqdLnpAzDjTolM9e8oZ1Wd-WcmjSs

@@ -213,38 +213,38 @@ class CenterMain extends ConsumerWidget {
     final exposure = ref.watch(exposureSlider);
 
     //changes exposure of content (only for homepage as it block inputs in other pages)
-    Color overlayColor;
-    if (exposure < 0) {
-      final opacity = (-exposure / 10).clamp(0.0, 1.0);
-      overlayColor = Colors.black.withAlpha((opacity * 255).round());
-    } else if (exposure > 0) {
-      final opacity = (exposure / 10).clamp(0.0, 1.0);
-      overlayColor = Colors.white.withAlpha((opacity * 255).round());
-    } else {
-      overlayColor = Colors.transparent;
-    }
+    // Color overlayColor;
+    // if (exposure < 0) {
+    //   final opacity = (-exposure / 10).clamp(0.0, 1.0);
+    //   overlayColor = Colors.black.withAlpha((opacity * 255).round());
+    // } else if (exposure > 0) {
+    //   final opacity = (exposure / 10).clamp(0.0, 1.0);
+    //   overlayColor = Colors.white.withAlpha((opacity * 255).round());
+    // } else {
+    //   overlayColor = Colors.transparent;
+    // }
 
-    // based on the page, change central content
-    if (page == 'HOME') {
-      return Stack(
-        children: [
-          HomePageContent(),
-          Container(color: overlayColor)
-        ], //Exposure Control
-      );
-    } else if (page == 'USER') { 
-      return UserPageContent();
-    } else if (page == 'ADMIN'){
-      return AdminPage();
-    } 
-    else {
-      return Stack(
-        children: [HomePageContent(), Container(color: overlayColor)],
-      ); //default fallback
-    }
+    // // based on the page, change central content
+    // if (page == 'HOME') {
+    //   return Stack(
+    //     children: [
+    //       HomePageContent(),
+    //       Container(color: overlayColor)
+    //     ], //Exposure Control
+    //   );
+    // } else if (page == 'USER') { 
+    //   return UserPageContent();
+    // } else if (page == 'ADMIN'){
+    //   return AdminPage();
+    // } 
+    // else {
+    //   return Stack(
+    //     children: [HomePageContent(), Container(color: overlayColor)],
+    //   ); //default fallback
+    // }
 
-    // // page bypass for debugging purposes
-    // return AdminPage();
+    // page bypass for debugging purposes
+    return AdminPage();
   }
 }
 
