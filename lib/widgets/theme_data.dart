@@ -23,6 +23,7 @@ final ThemeData customTheme = ThemeData(
     onError: Colors.white,
     outline: Colors.orangeAccent,
     inversePrimary: Colors.blueAccent,
+    inverseSurface: Colors.green.shade400,
   ),
 
 textTheme: TextTheme(
