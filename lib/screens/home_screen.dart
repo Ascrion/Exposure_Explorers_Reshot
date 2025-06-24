@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'admin_screen.dart';
-
 import '../services/video_player.dart';
 
 final currentPage = StateProvider<String>((ref) => 'HOME');
@@ -21,11 +20,18 @@ final currentTime = StreamProvider<String>((ref) async* {
   }
 });
 
-class HomePage extends ConsumerWidget {
+class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Pre-fetch drive links (from admin_screen)
+    useEffect(() {
+      syncGDriveLink(ref, 'get', '', 'FolderLink');
+      syncGDriveLink(ref, 'get', '', 'APILink');
+      return null;
+    }, []);
+
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
