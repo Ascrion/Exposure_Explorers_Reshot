@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../services/file_tracker_db.dart';
 
 // To choose setting pane
 final adminPageChoice = StateProvider<String>((ref) => '');
@@ -42,14 +43,8 @@ class PageSelector extends ConsumerWidget {
     switch (page) {
       case 'PhotoConfig':
         return PhotoConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
-      case 'HallOfFameConfig':
-        return HallOfFameConfig();
-      case 'TeamConfig':
-        return TeamConfig();
       case 'ContactConfig':
         return ContactConfig();
-      case 'HomePageConfig':
-        return HomePageConfig();
       case 'GDriveConfig':
         return GDriveConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
       default:
@@ -110,28 +105,6 @@ class AdminHomePage extends ConsumerWidget {
                 ref.read(adminPageChoice.notifier).state = 'PhotoConfig',
           ),
           ListTile(
-            leading: Image.asset('assets/icons/editors_choice.png'),
-            title: Text(
-              'Hall Of Fame',
-              style: subheaderTextStyle,
-            ),
-            subtitle: Text('Choose Photos for the Hall Of Fame'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () =>
-                ref.read(adminPageChoice.notifier).state = 'HallOfFameConfig',
-          ),
-          ListTile(
-            leading: Icon(Icons.people_alt_rounded),
-            title: Text(
-              'Team',
-              style: subheaderTextStyle,
-            ),
-            subtitle: Text('Edit Team members and positions'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () =>
-                ref.read(adminPageChoice.notifier).state = 'TeamConfig',
-          ),
-          ListTile(
             leading: Icon(Icons.contact_phone_rounded),
             title: Text(
               'Contact',
@@ -141,17 +114,6 @@ class AdminHomePage extends ConsumerWidget {
             trailing: Icon(Icons.arrow_forward),
             onTap: () =>
                 ref.read(adminPageChoice.notifier).state = 'ContactConfig',
-          ),
-          ListTile(
-            leading: Icon(Icons.home),
-            title: Text(
-              'Homepage',
-              style: subheaderTextStyle,
-            ),
-            subtitle: Text('Change HomePage Video & Description'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () =>
-                ref.read(adminPageChoice.notifier).state = 'HomePageConfig',
           ),
           ListTile(
             leading: Icon(Icons.settings),
@@ -218,27 +180,59 @@ class PhotoConfig extends ConsumerWidget {
               ],
             ),
           ),
+          FileManager(bodyTextStyle),
         ],
       ),
     );
   }
 }
 
-class HallOfFameConfig extends ConsumerWidget {
-  const HallOfFameConfig({super.key});
+class FileManager extends ConsumerWidget {
+  final dynamic bodyTextStyle;
+  const FileManager(this.bodyTextStyle, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Text('HallOfFameConfi');
-  }
-}
-
-class TeamConfig extends ConsumerWidget {
-  const TeamConfig({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Text('TeamConfig');
+    final tempDbList = ref.watch(fileTableProvider);
+    final workerUrl = "file-fetcher-api.navodiths.workers.dev";
+    return SizedBox(
+        child: DefaultTextStyle(
+            style: bodyTextStyle,
+            textAlign: TextAlign.center,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: tempDbList.length,
+                    itemBuilder: (context, index) {
+                      final currentRow = tempDbList[index];
+                      final id = currentRow.id;
+                      final fileURL = currentRow
+                          .fileURL; //The key with which the file was uploaded
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Image.network(
+                            fileURL,
+                            height: 80,
+                            width: 80,
+                          ),
+                          Text(currentRow.name),
+                          Text(currentRow.event),
+                          Text(currentRow.date),
+                          Text(currentRow.description),
+                          Text(currentRow.galleryOrder.toString()),
+                          Text(currentRow.eventsOrder.toString()),
+                          Text(currentRow.filesStorage.toString()),
+                        ],
+                      );
+                    },
+                  )
+                ],
+              ),
+            )));
   }
 }
 
@@ -248,15 +242,6 @@ class ContactConfig extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Text('ContactConfig');
-  }
-}
-
-class HomePageConfig extends ConsumerWidget {
-  const HomePageConfig({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Text('HomePageConfig');
   }
 }
 

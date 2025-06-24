@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'admin_screen.dart';
 import '../services/video_player.dart';
+import '../services/file_tracker_db.dart';
 
 final currentPage = StateProvider<String>((ref) => 'HOME');
 final exposureSlider = StateProvider<double>((ref) => 0.0);
@@ -25,6 +26,13 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    
+    // Store file tracker db in db only when first launced to avoid multiple d1 reads
+    useEffect(() {
+      retrieveFiles(ref);
+      return null;
+    }, []); 
+
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -224,26 +232,26 @@ class CenterMain extends ConsumerWidget {
     }
 
     // based on the page, change central content
-    if (page == 'HOME') {
-      return Stack(
-        children: [
-          HomePageContent(),
-          Container(color: overlayColor)
-        ], //Exposure Control
-      );
-    } else if (page == 'USER') {
-      return UserPageContent();
-    } else if (page == 'ADMIN'){
-      return AdminPage();
-    }
-    else {
-      return Stack(
-        children: [HomePageContent(), Container(color: overlayColor)],
-      ); //default fallback
-    }
+    // if (page == 'HOME') {
+    //   return Stack(
+    //     children: [
+    //       HomePageContent(),
+    //       Container(color: overlayColor)
+    //     ], //Exposure Control
+    //   );
+    // } else if (page == 'USER') {
+    //   return UserPageContent();
+    // } else if (page == 'ADMIN'){
+    //   return AdminPage();
+    // }
+    // else {
+    //   return Stack(
+    //     children: [HomePageContent(), Container(color: overlayColor)],
+    //   ); //default fallback
+    // }
 
     // page bypass for debugging purposes
-    //return AdminPage();
+    return AdminPage();
   }
 }
 
@@ -499,7 +507,7 @@ class _NavItemState extends State<_NavItem> {
         onTap: widget.onTap,
         onHover: (hovering) => setState(() => _isHovered = hovering),
         hoverColor: Colors.transparent,
-        splashColor: Colors.transparent, 
+        splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
