@@ -25,13 +25,6 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Pre-fetch drive links (from admin_screen)
-    useEffect(() {
-      syncGDriveLink(ref, 'get', '', 'FolderLink');
-      syncGDriveLink(ref, 'get', '', 'APILink');
-      return null;
-    }, []);
-
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -238,11 +231,11 @@ class CenterMain extends ConsumerWidget {
           Container(color: overlayColor)
         ], //Exposure Control
       );
-    } else if (page == 'USER') { 
+    } else if (page == 'USER') {
       return UserPageContent();
     } else if (page == 'ADMIN'){
       return AdminPage();
-    } 
+    }
     else {
       return Stack(
         children: [HomePageContent(), Container(color: overlayColor)],
@@ -250,7 +243,7 @@ class CenterMain extends ConsumerWidget {
     }
 
     // page bypass for debugging purposes
-    // return AdminPage();
+    //return AdminPage();
   }
 }
 
@@ -489,7 +482,6 @@ class _NavItem extends StatefulWidget {
 
 class _NavItemState extends State<_NavItem> {
   bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
     var color = widget.defaultColor;
@@ -507,7 +499,7 @@ class _NavItemState extends State<_NavItem> {
         onTap: widget.onTap,
         onHover: (hovering) => setState(() => _isHovered = hovering),
         hoverColor: Colors.transparent,
-        splashColor: Colors.transparent, // 👈 disables ripple
+        splashColor: Colors.transparent, 
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
