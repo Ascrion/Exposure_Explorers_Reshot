@@ -34,4 +34,16 @@ class FileRow {
       filesStorage: json['filesStorage'] ?? 0.0,
     );
   }
+
+    Map<String, dynamic> toJson() => {
+    // leave id blank , db will assign on its own
+    'name': name,
+    'event': event,
+    'fileURL': fileURL,
+    'date': date,
+    'description': description,
+    'galleryOrder':galleryOrder,
+    'eventsOrder': eventsOrder,
+    'filesStorage':filesStorage,
+  };
 }

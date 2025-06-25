@@ -8,13 +8,13 @@ const String baseUrl = 'https://exposure-explorers-file-db.navodiths.workers.dev
 // To temporarily store the db in memory
 final fileTableProvider = StateProvider<List<FileRow>>((ref) => []);
 
-Future<bool> insertFile(Map<String, dynamic> file) async {
+Future<int> insertFile(Map<String, dynamic> file) async {
   final res = await http.post(
     Uri.parse('$baseUrl/files-insert'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode(file),
   );
-  return res.statusCode == 200;
+  return res.statusCode;
 }
 
 // Modified retrieve function to store table locally

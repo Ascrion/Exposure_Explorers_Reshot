@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../services/file_tracker_db.dart';
+import '../screens/add_photos.dart';
 
 // To choose setting pane
 final adminPageChoice = StateProvider<String>((ref) => '');
@@ -47,6 +48,8 @@ class PageSelector extends ConsumerWidget {
         return ContactConfig();
       case 'GDriveConfig':
         return GDriveConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
+      case 'AddPhotos':
+        return AddPhotos();
       default:
         return AdminHomePage(
             headerTextStyle, subheaderTextStyle, bodyTextStyle);
@@ -75,22 +78,6 @@ class AdminHomePage extends ConsumerWidget {
             title: Text(
               '  Admin Settings:',
               style: headerTextStyle,
-            ),
-            trailing: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                foregroundColor: Colors.white,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  // 🔲 Border radius
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSecondary),
-              ),
-              child: Text('Save'),
             ),
           ),
           ListTile(
@@ -151,36 +138,107 @@ class PhotoConfig extends ConsumerWidget {
 
     return DefaultTextStyle(
       style: bodyTextStyle,
-      textAlign: TextAlign.center,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListTile(
-            iconColor: Theme.of(context).colorScheme.inversePrimary,
-            leading: IconButton(
-              onPressed: () => ref.read(adminPageChoice.notifier).state = '',
-              icon: Icon(Icons.arrow_back_sharp),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => ref.read(adminPageChoice.notifier).state = '',
+                  icon: Icon(Icons.arrow_back),
+                ),
+                Text('Photos', style: headerTextStyle),
+              ],
             ),
-            title: Text('Photos', style: headerTextStyle),
-          ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 150, // set width
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ref.read(adminPageChoice.notifier).state = 'AddPhotos';
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    ),
+                    child: Text(
+                      'Add Photos',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 20,),
+               SizedBox(
+                  width: 150, // set width
+                  child: ElevatedButton(
+                    onPressed: () {
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    ),
+                    child: Text(
+                      'SAVE',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.inverseSurface,
+                          ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ]),
           DefaultTextStyle(
             style: titleStyle,
             textAlign: TextAlign.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Expanded(child: Text('Image')),
-                Expanded(child: Text('Name')),
-                Expanded(child: Text('Event')),
-                Expanded(child: Text('Date')),
-                Expanded(child: Text('Description')),
-                Expanded(child: Text('Gallery#')),
-                Expanded(child: Text('Event#')),
-                Expanded(child: Text('Storage')),
-              ],
-            ),
+            child: LayoutBuilder(builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              return Column(children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: width * 0.4,
+                      child: Text('Image Details'),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Text('Event'),
+                          Text('Gallery#'),
+                          Text('Event#'),
+                          Text('Storage'),
+                          Text('Delete'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                FileManager(bodyTextStyle),
+              ]);
+            }),
           ),
-          FileManager(bodyTextStyle),
         ],
       ),
     );
@@ -198,7 +256,6 @@ class FileManager extends ConsumerWidget {
     return SizedBox(
         child: DefaultTextStyle(
             style: bodyTextStyle,
-            textAlign: TextAlign.center,
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -211,23 +268,86 @@ class FileManager extends ConsumerWidget {
                       final id = currentRow.id;
                       final fileURL = currentRow
                           .fileURL; //The key with which the file was uploaded
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Image.network(
-                            fileURL,
-                            height: 80,
-                            width: 80,
-                          ),
-                          Text(currentRow.name),
-                          Text(currentRow.event),
-                          Text(currentRow.date),
-                          Text(currentRow.description),
-                          Text(currentRow.galleryOrder.toString()),
-                          Text(currentRow.eventsOrder.toString()),
-                          Text(currentRow.filesStorage.toString()),
-                        ],
-                      );
+                      return LayoutBuilder(builder: (context, constraints) {
+                        final width = constraints.maxWidth;
+                        return Column(
+                          children: [
+                            Container(
+                                color: Theme.of(context).colorScheme.surface,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    SizedBox(
+                                      width: width * 0.4,
+                                      child: Row(
+                                        children: [
+                                          Image.network(fileURL,
+                                              height: 80, width: 80),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                    'Name: ${currentRow.name}'),
+                                                Text(
+                                                    'Date: ${currentRow.date}'),
+                                                Text(
+                                                  'Description: ${currentRow.description}',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 2,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Text(
+                                            currentRow.event,
+                                          ),
+                                          SizedBox(
+                                            width: width * 0.01,
+                                          ), // For alignment
+                                          Text(currentRow.galleryOrder
+                                              .toString()),
+                                          SizedBox(
+                                            width: width * 0.01,
+                                          ),
+                                          Text(currentRow.eventsOrder
+                                              .toString()),
+                                          SizedBox(
+                                            width: width * 0.01,
+                                          ),
+                                          Text(currentRow.filesStorage
+                                              .toString()),
+                                          SizedBox(
+                                            width: width * 0.01,
+                                          ),
+                                          IconButton(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.delete_forever,
+                                                color: Colors.red.shade300),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                )),
+                            SizedBox(
+                              height: 20,
+                            )
+                          ],
+                        );
+                      });
                     },
                   )
                 ],
