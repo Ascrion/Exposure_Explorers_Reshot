@@ -37,11 +37,22 @@ Future<bool> updateFile(Map<String, dynamic> file) async {
   return res.statusCode == 200;
 }
 
-Future<bool> deleteFile(int id) async {
+Future<bool> deleteFileDB(int id) async {
   final res = await http.post(
     Uri.parse('$baseUrl/files-delete'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'id': id}),
   );
   return res.statusCode == 200;
+}
+
+Future<double> storageUsed() async {
+  final res = await http.get(Uri.parse('$baseUrl/storage-used'));
+
+  if (res.statusCode == 200) {
+    final result = json.decode(res.body);
+    return (result['total'] ?? 0).toDouble(); // Ensures it's a double
+  } else {
+    return 500.00; // Prevent new uploads to avoid storage ovverruns
+  }
 }

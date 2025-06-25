@@ -21,13 +21,18 @@ Future<List<dynamic>> uploadFile(String fileName, Uint8List bytes) async {
 Future<Uint8List?> downloadFile(String fileName) async {
   final response = await http.get(Uri.parse('$baseUrl/download?key=$fileName'));
   if (response.statusCode == 200) return response.bodyBytes;
-  print('Download failed: ${response.statusCode}');
+  //print('Download failed: ${response.statusCode}');
   return null;
 }
 
-Future<void> deleteFile(String fileName) async {
+Future<bool> deleteFileR2(String fileName) async {
   final response = await http.delete(Uri.parse('$baseUrl/delete?key=$fileName'));
-  print('Delete: ${response.body}');
+  if (response.statusCode == 200){
+    return true;
+  }
+  else{
+    return false;
+  }
 }
 
 // To preview files (without downloading, reference the key used when uploading):

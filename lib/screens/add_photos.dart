@@ -4,7 +4,7 @@ import '../services/file_tracker_db.dart';
 import '../models/temp_db.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
-import '../services/file_R2_connect.dart';
+import '../services/file_photo_bucket_connect.dart';
 import '../screens/admin_screen.dart';
 
 // Track photos to be inserted, update database with this.
@@ -65,7 +65,7 @@ class _LoginPageState extends ConsumerState<AddPhotos> {
       final height = constraints.maxHeight;
       return Align(
           child: SizedBox(
-              height: height*0.8 ,
+              height: height * 0.8,
               width: width / 2,
               child: Card(
                 child: Padding(
@@ -74,9 +74,13 @@ class _LoginPageState extends ConsumerState<AddPhotos> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ListTile(leading: IconButton(onPressed: (){
-                        ref.read(adminPageChoice.notifier).state = 'PhotoConfig'; // Return Back
-                      }, icon: Icon(Icons.arrow_back))),
+                      ListTile(
+                          leading: IconButton(
+                              onPressed: () {
+                                ref.read(adminPageChoice.notifier).state =
+                                    'PhotoConfig'; // Return Back
+                              },
+                              icon: Icon(Icons.arrow_back))),
                       Container(
                         width: width / 3,
                         height: height / 4,
@@ -96,7 +100,7 @@ class _LoginPageState extends ConsumerState<AddPhotos> {
                                 : Image.memory(userData[3])),
                       ),
                       SizedBox(
-                        height: height/20,
+                        height: height / 20,
                         child: Text(
                           userError,
                           style: TextStyle(
@@ -215,18 +219,24 @@ Future<void> pickFile(ref) async {
       if (!(extension == 'jpg' || extension == 'png')) {
         ref.read(userFileError.notifier).state = 'Wrong file format uploaded';
       } else {
-        final uploadResponse = await uploadFile(name, fileBytes!);
-        if (uploadResponse[0] == 200) {
-          ref.read(userFileData.notifier).state = [
-            name,
-            uploadResponse[1],
-            sizeInMB,
-            fileBytes
-          ];
-        } else {
-          ref.read(userFileError.notifier).state =
-              uploadResponse[1]; // Error Details
-          ref.read(userFileData.notifier).state = [];
+        final usedStorage = await storageUsed();
+        if (usedStorage + sizeInMB < 500) {
+          final uploadResponse = await uploadFile(name, fileBytes!);
+          if (uploadResponse[0] == 200) {
+            ref.read(userFileData.notifier).state = [
+              name,
+              uploadResponse[1],
+              sizeInMB,
+              fileBytes
+            ];
+          } else {
+            ref.read(userFileError.notifier).state =
+                uploadResponse[1]; // Error Details
+            ref.read(userFileData.notifier).state = [];
+          }
+        }else{
+          //print('$sizeInMB + $usedStorage');
+          ref.read(userFileError.notifier).state = 'Server max storage exceeded, delete some photos to clear space';
         }
       }
     }

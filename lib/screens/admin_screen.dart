@@ -1,3 +1,4 @@
+import 'package:exposure_explorer_reshot/services/file_photo_bucket_connect.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../services/file_tracker_db.dart';
@@ -5,6 +6,9 @@ import '../screens/add_photos.dart';
 
 // To choose setting pane
 final adminPageChoice = StateProvider<String>((ref) => '');
+
+// Tracks files to be deleted (id needed for file tracker and name needed for r2 connect [id,name])
+final deletePhotoList = StateProvider<List<List<dynamic>>>((ref) => []);
 
 class AdminPage extends ConsumerWidget {
   const AdminPage({super.key});
@@ -131,22 +135,26 @@ class PhotoConfig extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final deleteList = ref.watch(deletePhotoList);
     final dynamic titleStyle = Theme.of(context)
         .textTheme
         .labelMedium
         ?.copyWith(color: Theme.of(context).colorScheme.onSecondary);
+
+    // Requires save button to be pressed to conduct action
+    bool enableSaveButton = deleteList.isNotEmpty;
 
     return DefaultTextStyle(
       style: bodyTextStyle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Row(
               children: [
                 IconButton(
-                  onPressed: () => ref.read(adminPageChoice.notifier).state = '',
+                  onPressed: () =>
+                      ref.read(adminPageChoice.notifier).state = '',
                   icon: Icon(Icons.arrow_back),
                 ),
                 Text('Photos', style: headerTextStyle),
@@ -161,12 +169,12 @@ class PhotoConfig extends ConsumerWidget {
                       ref.read(adminPageChoice.notifier).state = 'AddPhotos';
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       foregroundColor: Colors.white,
-                      elevation: 4,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(4)
                       ),
+                      elevation: 4,
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
@@ -178,26 +186,28 @@ class PhotoConfig extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 20,),
-               SizedBox(
+                SizedBox(
+                  width: 20,
+                ),
+                SizedBox(
                   width: 150, // set width
                   child: ElevatedButton(
-                    onPressed: () {
-                    },
+                   onPressed: enableSaveButton ? () => deletePhoto(deleteList, ref) : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 4,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(4),
                       ),
+                      elevation: 4,
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
                     child: Text(
                       'SAVE',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.inverseSurface,
+                            color: enableSaveButton == false
+                                ? Theme.of(context).colorScheme.surface
+                                : Theme.of(context).colorScheme.inverseSurface,
                           ),
                     ),
                   ),
@@ -205,6 +215,7 @@ class PhotoConfig extends ConsumerWidget {
               ],
             )
           ]),
+          SizedBox(height: 10),
           DefaultTextStyle(
             style: titleStyle,
             textAlign: TextAlign.center,
@@ -252,7 +263,7 @@ class FileManager extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tempDbList = ref.watch(fileTableProvider);
-    final workerUrl = "file-fetcher-api.navodiths.workers.dev";
+    final deleteList = ref.watch(deletePhotoList);
     return SizedBox(
         child: DefaultTextStyle(
             style: bodyTextStyle,
@@ -266,8 +277,14 @@ class FileManager extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final currentRow = tempDbList[index];
                       final id = currentRow.id;
-                      final fileURL = currentRow
-                          .fileURL; //The key with which the file was uploaded
+                      final name = currentRow.name;
+                      //The download URL
+                      final fileURL = currentRow.fileURL;
+                      // Check if current photo [id,name] in delete list
+                      bool isIdInDeleteList = deleteList.any(
+                        (element) => element[0] == id && element[1] == name,
+                      );
+
                       return LayoutBuilder(builder: (context, constraints) {
                         final width = constraints.maxWidth;
                         return Column(
@@ -333,9 +350,27 @@ class FileManager extends ConsumerWidget {
                                             width: width * 0.01,
                                           ),
                                           IconButton(
-                                            onPressed: () {},
-                                            icon: Icon(Icons.delete_forever,
-                                                color: Colors.red.shade300),
+                                            onPressed: () {
+                                              final currentList = [
+                                                ...ref.read(deletePhotoList)
+                                              ];
+                                              if (isIdInDeleteList) {
+                                                currentList.removeWhere((e) =>
+                                                    e[0] == id && e[1] == name);
+                                              } else {
+                                                currentList.add([id, name]);
+                                              }
+                                              ref
+                                                  .read(
+                                                      deletePhotoList.notifier)
+                                                  .state = currentList;
+                                            },
+                                            icon: isIdInDeleteList == true
+                                                ? Icon(Icons.undo,
+                                                    color: const Color.fromARGB(
+                                                        255, 76, 220, 28))
+                                                : Icon(Icons.delete_forever,
+                                                    color: Colors.red.shade300),
                                           ),
                                         ],
                                       ),
@@ -377,5 +412,27 @@ class GDriveConfig extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Text('data');
+  }
+}
+
+// Delete from
+Future<void> deletePhoto(List<List<dynamic>> deleteList, WidgetRef ref) async {
+  for (var i in deleteList) {
+    bool resR2 = await deleteFileR2(i[1]);
+    if (resR2) {
+      bool resDB = await deleteFileDB(i[0]);
+      if (resDB) {
+        final currentPhotoDeleteList = [...ref.read(deletePhotoList)];
+        currentPhotoDeleteList.removeWhere(
+          (element) => element[0] == i[0] && element[1] == i[1],
+        );
+
+        ref.read(deletePhotoList.notifier).state = currentPhotoDeleteList;
+        retrieveFiles(ref); // updated files after deletion
+      }
+     }
+    // else {
+    //   print('Error deleting file from R2');
+    // }
   }
 }
