@@ -35,15 +35,39 @@ class FileRow {
     );
   }
 
-    Map<String, dynamic> toJson() => {
-    // leave id blank , db will assign on its own
-    'name': name,
-    'event': event,
-    'fileURL': fileURL,
-    'date': date,
-    'description': description,
-    'galleryOrder':galleryOrder,
-    'eventsOrder': eventsOrder,
-    'filesStorage':filesStorage,
-  };
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'event': event,
+        'fileURL': fileURL,
+        'date': date,
+        'description': description,
+        'galleryOrder': galleryOrder ?? -1,
+        'eventsOrder': eventsOrder ?? -1,
+        'filesStorage': filesStorage ?? 0,
+      };
+
+  FileRow copyWith({
+    int? id,
+    String? name,
+    String? event,
+    String? fileURL,
+    String? date,
+    String? description,
+    int? galleryOrder,
+    int? eventsOrder,
+    double? filesStorage,
+  }) {
+    return FileRow(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      event: event ?? this.event,
+      fileURL: fileURL ?? this.fileURL,
+      date: date ?? this.date,
+      description: description ?? this.description,
+      galleryOrder: galleryOrder ?? this.galleryOrder,
+      eventsOrder: eventsOrder ?? this.eventsOrder,
+      filesStorage: filesStorage ?? this.filesStorage,
+    );
+  }
 }

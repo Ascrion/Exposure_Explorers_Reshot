@@ -28,12 +28,15 @@ Future<void> retrieveFiles(ref) async {
   }
 }
 
-Future<bool> updateFile(Map<String, dynamic> file) async {
+Future<bool> updateFileDB(FileRow file) async {
+  final payload = jsonEncode(file.toJson());
+  print('Sending JSON: $payload');
   final res = await http.post(
     Uri.parse('$baseUrl/files-update'),
     headers: {'Content-Type': 'application/json'},
-    body: jsonEncode(file),
+    body: jsonEncode(file.toJson()), 
   );
+  print(res.body);
   return res.statusCode == 200;
 }
 

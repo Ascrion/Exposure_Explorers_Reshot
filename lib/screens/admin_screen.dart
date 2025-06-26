@@ -1,3 +1,5 @@
+import 'package:exposure_explorer_reshot/models/temp_db.dart';
+import 'package:exposure_explorer_reshot/screens/edit_photos.dart';
 import 'package:exposure_explorer_reshot/services/file_photo_bucket_connect.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,6 +11,18 @@ final adminPageChoice = StateProvider<String>((ref) => '');
 
 // Tracks files to be deleted (id needed for file tracker and name needed for r2 connect [id,name])
 final deletePhotoList = StateProvider<List<List<dynamic>>>((ref) => []);
+
+// Provide file to be edited to edit Page
+final editingRowProvider = StateProvider<FileRow>((ref) => FileRow(
+    id: -1,
+    name: '',
+    event: '',
+    fileURL: '',
+    date: '',
+    description: '',
+    galleryOrder: -1,
+    eventsOrder: -1,
+    filesStorage: 1));
 
 class AdminPage extends ConsumerWidget {
   const AdminPage({super.key});
@@ -54,6 +68,8 @@ class PageSelector extends ConsumerWidget {
         return GDriveConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
       case 'AddPhotos':
         return AddPhotos();
+      case 'EditPhoto':
+        return EditPhoto();
       default:
         return AdminHomePage(
             headerTextStyle, subheaderTextStyle, bodyTextStyle);
@@ -172,8 +188,7 @@ class PhotoConfig extends ConsumerWidget {
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)
-                      ),
+                          borderRadius: BorderRadius.circular(4)),
                       elevation: 4,
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -192,7 +207,10 @@ class PhotoConfig extends ConsumerWidget {
                 SizedBox(
                   width: 150, // set width
                   child: ElevatedButton(
-                   onPressed: enableSaveButton ? () => deletePhoto(deleteList, ref) : null,
+                    onPressed: enableSaveButton
+                        ? () => 
+                              deletePhoto(deleteList, ref)
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       shape: RoundedRectangleBorder(
@@ -264,6 +282,7 @@ class FileManager extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tempDbList = ref.watch(fileTableProvider);
     final deleteList = ref.watch(deletePhotoList);
+
     return SizedBox(
         child: DefaultTextStyle(
             style: bodyTextStyle,
@@ -275,6 +294,7 @@ class FileManager extends ConsumerWidget {
                     physics: NeverScrollableScrollPhysics(),
                     itemCount: tempDbList.length,
                     itemBuilder: (context, index) {
+                      // Data
                       final currentRow = tempDbList[index];
                       final id = currentRow.id;
                       final name = currentRow.name;
@@ -284,7 +304,6 @@ class FileManager extends ConsumerWidget {
                       bool isIdInDeleteList = deleteList.any(
                         (element) => element[0] == id && element[1] == name,
                       );
-
                       return LayoutBuilder(builder: (context, constraints) {
                         final width = constraints.maxWidth;
                         return Column(
@@ -308,9 +327,12 @@ class FileManager extends ConsumerWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                    'Name: ${currentRow.name}'),
+                                                    'Name: ${currentRow.name}'), //immutable as referenced by r2
                                                 Text(
-                                                    'Date: ${currentRow.date}'),
+                                                  'Date: ${currentRow.date}',
+                                                  style: bodyTextStyle,
+                                                ),
+
                                                 Text(
                                                   'Description: ${currentRow.description}',
                                                   overflow:
@@ -345,32 +367,49 @@ class FileManager extends ConsumerWidget {
                                             width: width * 0.01,
                                           ),
                                           Text(currentRow.filesStorage
-                                              .toString()),
-                                          SizedBox(
-                                            width: width * 0.01,
-                                          ),
-                                          IconButton(
-                                            onPressed: () {
-                                              final currentList = [
-                                                ...ref.read(deletePhotoList)
-                                              ];
-                                              if (isIdInDeleteList) {
-                                                currentList.removeWhere((e) =>
-                                                    e[0] == id && e[1] == name);
-                                              } else {
-                                                currentList.add([id, name]);
-                                              }
-                                              ref
-                                                  .read(
-                                                      deletePhotoList.notifier)
-                                                  .state = currentList;
-                                            },
-                                            icon: isIdInDeleteList == true
-                                                ? Icon(Icons.undo,
-                                                    color: const Color.fromARGB(
-                                                        255, 76, 220, 28))
-                                                : Icon(Icons.delete_forever,
-                                                    color: Colors.red.shade300),
+                                              .toStringAsPrecision(3)),
+                                          Row(
+                                            children: [
+                                              IconButton(
+                                                  onPressed: () {
+                                                    ref
+                                                        .read(adminPageChoice
+                                                            .notifier)
+                                                        .state = 'EditPhoto';
+                                                    ref.read(editingRowProvider.notifier).state = currentRow;
+                                                  },
+                                                  icon: Icon(
+                                                    Icons.edit,
+                                                    color: Colors.amber,
+                                                  )),
+                                              IconButton(
+                                                onPressed: () {
+                                                  final currentList = [
+                                                    ...ref.read(deletePhotoList)
+                                                  ];
+                                                  if (isIdInDeleteList) {
+                                                    currentList.removeWhere(
+                                                        (e) =>
+                                                            e[0] == id &&
+                                                            e[1] == name);
+                                                  } else {
+                                                    currentList.add([id, name]);
+                                                  }
+                                                  ref
+                                                      .read(deletePhotoList
+                                                          .notifier)
+                                                      .state = currentList;
+                                                },
+                                                icon: isIdInDeleteList == true
+                                                    ? Icon(Icons.undo,
+                                                        color: const Color
+                                                            .fromARGB(
+                                                            255, 76, 220, 28))
+                                                    : Icon(Icons.delete_forever,
+                                                        color: Colors
+                                                            .red.shade300),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -415,7 +454,7 @@ class GDriveConfig extends HookConsumerWidget {
   }
 }
 
-// Delete from
+// Delete Photo
 Future<void> deletePhoto(List<List<dynamic>> deleteList, WidgetRef ref) async {
   for (var i in deleteList) {
     bool resR2 = await deleteFileR2(i[1]);
@@ -430,9 +469,6 @@ Future<void> deletePhoto(List<List<dynamic>> deleteList, WidgetRef ref) async {
         ref.read(deletePhotoList.notifier).state = currentPhotoDeleteList;
         retrieveFiles(ref); // updated files after deletion
       }
-     }
-    // else {
-    //   print('Error deleting file from R2');
-    // }
+    }
   }
 }
