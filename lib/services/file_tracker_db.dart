@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:exposure_explorer_reshot/screens/admin_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../models/temp_db.dart';
@@ -29,14 +30,14 @@ Future<void> retrieveFiles(ref) async {
 }
 
 Future<bool> updateFileDB(FileRow file) async {
-  final payload = jsonEncode(file.toJson());
-  print('Sending JSON: $payload');
+  //final payload = jsonEncode(file.toJson());
+  //print('Sending JSON: $payload');
   final res = await http.post(
     Uri.parse('$baseUrl/files-update'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode(file.toJson()), 
   );
-  print(res.body);
+  //print(res.body);
   return res.statusCode == 200;
 }
 
@@ -57,5 +58,15 @@ Future<double> storageUsed() async {
     return (result['total'] ?? 0).toDouble(); // Ensures it's a double
   } else {
     return 500.00; // Prevent new uploads to avoid storage ovverruns
+  }
+}
+
+// Extract Event lists
+Future<void>extractEventlist(WidgetRef ref) async{
+  final res = await http.get(Uri.parse('$baseUrl/event-lists'));
+  if (res.statusCode == 200){
+    ref.read(eventsProvider.notifier).state =List<String>.from(jsonDecode(res.body));
+  }else{
+     throw Exception('Failed to retrieve files');
   }
 }

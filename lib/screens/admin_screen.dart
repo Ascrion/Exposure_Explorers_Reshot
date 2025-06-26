@@ -24,6 +24,10 @@ final editingRowProvider = StateProvider<FileRow>((ref) => FileRow(
     eventsOrder: -1,
     filesStorage: 1));
 
+// Events creator
+final eventsProvider = StateProvider<List<String>>((ref) => []);
+final eventsDataProvider = StateProvider<List<dynamic>>((ref) => []);
+
 class AdminPage extends ConsumerWidget {
   const AdminPage({super.key});
 
@@ -62,10 +66,10 @@ class PageSelector extends ConsumerWidget {
     switch (page) {
       case 'PhotoConfig':
         return PhotoConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
-      case 'ContactConfig':
-        return ContactConfig();
-      case 'GDriveConfig':
-        return GDriveConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
+      // case 'ContactConfig':
+      //   return ContactConfig();
+      // case 'GDriveConfig':
+      //   return GDriveConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
       case 'AddPhotos':
         return AddPhotos();
       case 'EditPhoto':
@@ -111,29 +115,29 @@ class AdminHomePage extends ConsumerWidget {
             onTap: () =>
                 ref.read(adminPageChoice.notifier).state = 'PhotoConfig',
           ),
-          ListTile(
-            leading: Icon(Icons.contact_phone_rounded),
-            title: Text(
-              'Contact',
-              style: subheaderTextStyle,
-            ),
-            subtitle: Text('Change Contact and About Us'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () =>
-                ref.read(adminPageChoice.notifier).state = 'ContactConfig',
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text(
-              'Config',
-              style: subheaderTextStyle,
-            ),
-            subtitle: Text('Change G-Drive links for different events.'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () {
-              ref.read(adminPageChoice.notifier).state = 'GDriveConfig';
-            },
-          ),
+          // ListTile(
+          //   leading: Icon(Icons.contact_phone_rounded),
+          //   title: Text(
+          //     'Contact',
+          //     style: subheaderTextStyle,
+          //   ),
+          //   subtitle: Text('Change Contact and About Us'),
+          //   trailing: Icon(Icons.arrow_forward),
+          //   onTap: () =>
+          //       ref.read(adminPageChoice.notifier).state = 'ContactConfig',
+          // ),
+          // ListTile(
+          //   leading: Icon(Icons.settings),
+          //   title: Text(
+          //     'Config',
+          //     style: subheaderTextStyle,
+          //   ),
+          //   subtitle: Text('Change G-Drive links for different events.'),
+          //   trailing: Icon(Icons.arrow_forward),
+          //   onTap: () {
+          //     ref.read(adminPageChoice.notifier).state = 'GDriveConfig';
+//             },
+//           ),
         ],
       )));
     });
@@ -208,8 +212,7 @@ class PhotoConfig extends ConsumerWidget {
                   width: 150, // set width
                   child: ElevatedButton(
                     onPressed: enableSaveButton
-                        ? () => 
-                              deletePhoto(deleteList, ref)
+                        ? () => deletePhoto(deleteList, ref)
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -376,7 +379,10 @@ class FileManager extends ConsumerWidget {
                                                         .read(adminPageChoice
                                                             .notifier)
                                                         .state = 'EditPhoto';
-                                                    ref.read(editingRowProvider.notifier).state = currentRow;
+                                                    ref
+                                                        .read(editingRowProvider
+                                                            .notifier)
+                                                        .state = currentRow;
                                                   },
                                                   icon: Icon(
                                                     Icons.edit,
@@ -430,29 +436,128 @@ class FileManager extends ConsumerWidget {
   }
 }
 
-class ContactConfig extends ConsumerWidget {
-  const ContactConfig({super.key});
+// class ContactConfig extends ConsumerWidget {
+//   const ContactConfig({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Text('ContactConfig');
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     return Text('ContactConfig');
+//   }
+// }
 
-class GDriveConfig extends HookConsumerWidget {
-  final dynamic headerTextStyle;
-  final dynamic subheaderTextStyle;
-  final dynamic bodyTextStyle;
+// class GDriveConfig extends HookConsumerWidget {
+//   final dynamic headerTextStyle;
+//   final dynamic subheaderTextStyle;
+//   final dynamic bodyTextStyle;
 
-  const GDriveConfig(
-      this.headerTextStyle, this.subheaderTextStyle, this.bodyTextStyle,
-      {super.key});
+//   const GDriveConfig(
+//       this.headerTextStyle, this.subheaderTextStyle, this.bodyTextStyle,
+//       {super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Text('data');
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//   extractEventlist(ref);
+// });
+
+//     final events = ref.watch(eventsProvider);
+//     final eventsDataList = ref.watch(eventsDataProvider);
+//     bool enableSaveButton = false;
+//     final width = MediaQuery.of(context).size.width;
+//     return Column(
+//       children: [
+//         // Header
+//         Row(
+//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//           children: [
+//             Row(
+//               children: [
+//                 IconButton(
+//                   onPressed: () =>
+//                       ref.read(adminPageChoice.notifier).state = '',
+//                   icon: Icon(Icons.arrow_back),
+//                 ),
+//                 Text('Photos', style: headerTextStyle),
+//               ],
+//             ),
+//             SizedBox(
+//               width: 150, // set width
+//               child: ElevatedButton(
+//                 onPressed: enableSaveButton ? () {} : null,
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: Theme.of(context).colorScheme.surface,
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(4),
+//                   ),
+//                   elevation: 4,
+//                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+//                 ),
+//                 child: Text(
+//                   'SAVE',
+//                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
+//                         color: enableSaveButton == false
+//                             ? Theme.of(context).colorScheme.surface
+//                             : Theme.of(context).colorScheme.inverseSurface,
+//                       ),
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//         Container(
+//           color: Theme.of(context).colorScheme.primary,
+//           child: Row(
+//             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//             children: [
+//               Text(
+//                 'Event',
+//                 style: bodyTextStyle,
+//               ),
+//               SizedBox(width: width * 0.1),
+//               Text(
+//                 'G-Drive Link',
+//                 style: bodyTextStyle,
+//               ),
+//               SizedBox(width: width * 0.1),
+//               Text(
+//                 'Enabled',
+//                 style: bodyTextStyle,
+//               ),
+//             ],
+//           ),
+//         ),
+//         ListView.builder(
+//           shrinkWrap: true,
+//           // physics: NeverScrollableScrollPhysics()
+//           itemCount: events.length,
+//           itemBuilder: (context, index) {
+//             final event = events[index];
+//             // Get event data, if doesnt exist create new data for that event
+//             try {
+//               receivetEventConfig(event, ref);
+//             } catch (e) {
+//               insertEventConfig({'gDriveLink': '', 'isEnabled': false}, event);
+//               receivetEventConfig(event, ref);
+//             }
+//             final dataIndex =
+//                 eventsDataList.indexWhere((e) => e[0] == events[index]);
+//             final eventsData = eventsDataList[dataIndex];
+//             return Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//               children: [
+//                 Text(events[index]),
+//                 SizedBox(width: width * 0.1),
+//                 Text(eventsData[1]),
+//                 SizedBox(width: width * 0.1),
+//                 Text(eventsData[2]),
+//               ],
+//             );
+//           },
+//         )
+//       ],
+//     );
+//   }
+// }
 
 // Delete Photo
 Future<void> deletePhoto(List<List<dynamic>> deleteList, WidgetRef ref) async {

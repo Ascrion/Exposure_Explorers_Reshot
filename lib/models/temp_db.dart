@@ -42,9 +42,9 @@ class FileRow {
         'fileURL': fileURL,
         'date': date,
         'description': description,
-        'galleryOrder': galleryOrder ?? -1,
-        'eventsOrder': eventsOrder ?? -1,
-        'filesStorage': filesStorage ?? 0,
+        'galleryOrder': galleryOrder,
+        'eventsOrder': eventsOrder,
+        'filesStorage': filesStorage,
       };
 
   FileRow copyWith({

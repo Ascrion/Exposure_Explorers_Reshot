@@ -232,26 +232,26 @@ class CenterMain extends ConsumerWidget {
     }
 
     // based on the page, change central content
-    // if (page == 'HOME') {
-    //   return Stack(
-    //     children: [
-    //       HomePageContent(),
-    //       Container(color: overlayColor)
-    //     ], //Exposure Control
-    //   );
-    // } else if (page == 'USER') {
-    //   return UserPageContent();
-    // } else if (page == 'ADMIN'){
-    //   return AdminPage();
-    // }
-    // else {
-    //   return Stack(
-    //     children: [HomePageContent(), Container(color: overlayColor)],
-    //   ); //default fallback
-    // }
+    if (page == 'HOME') {
+      return Stack(
+        children: [
+          HomePageContent(),
+          Container(color: overlayColor)
+        ], //Exposure Control
+      );
+    } else if (page == 'USER') {
+      return UserPageContent();
+    } else if (page == 'ADMIN'){
+      return AdminPage();
+    }
+    else {
+      return Stack(
+        children: [HomePageContent(), Container(color: overlayColor)],
+      ); //default fallback
+    }
 
     // page bypass for debugging purposes
-    return AdminPage();
+    // return AdminPage();
   }
 }
 
