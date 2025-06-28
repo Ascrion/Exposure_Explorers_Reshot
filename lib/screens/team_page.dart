@@ -30,9 +30,14 @@ class TeamPage extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'TEAM',
-          style: headerTextStyle,
+        Container(
+          width: width*0.73,
+          color: Theme.of(context).colorScheme.surface,
+          child: Text(
+            'TEAM',
+            style: headerTextStyle,
+                   textAlign: TextAlign.center,
+          ),
         ),
         Expanded(
           child: GridView.builder(
@@ -72,6 +77,8 @@ class TeamPage extends HookConsumerWidget {
                               currentImageData.description,
                               style: bodyTextStyle,
                               textAlign: TextAlign.center,
+                               maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

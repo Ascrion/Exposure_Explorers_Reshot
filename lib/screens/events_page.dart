@@ -44,9 +44,14 @@ class EventsPage extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'EVENTS',
-          style: headerTextStyle,
+        Container(
+          width: width*0.73,
+                color: Theme.of(context).colorScheme.surface,
+          child: Text(
+            'EVENTS',
+            style: headerTextStyle,
+            textAlign: TextAlign.center,
+          ),
         ),
         Expanded(
           child: ListView.builder(

@@ -2,7 +2,6 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
-
 // video state
 final videoControllerProvider =
     StateNotifierProvider<VideoControllerNotifier, VideoPlayerController?>(
@@ -10,23 +9,17 @@ final videoControllerProvider =
 );
 final isVideoPlayingProvider = StateProvider<bool>((ref) => false);
 
-
 class VideoControllerNotifier extends StateNotifier<VideoPlayerController?> {
   final Ref _ref;
 
   VideoControllerNotifier(this._ref) : super(null);
 
-  Future<void> initialize(String assetPath) async {
-    final controller = VideoPlayerController.networkUrl(Uri.parse(assetPath));
-    await controller.initialize();
-    controller.setLooping(true);
-    controller.setVolume(0);
-    controller.play();
+  void setController(VideoPlayerController controller) {
     state = controller;
-
     controller.addListener(() {
-      _ref.read(isVideoPlayingProvider.notifier).state = controller.value.isPlaying;
-  });
+      _ref.read(isVideoPlayingProvider.notifier).state =
+          controller.value.isPlaying;
+    });
   }
 
   void play() => state?.play();
@@ -46,36 +39,40 @@ class VideoControllerNotifier extends StateNotifier<VideoPlayerController?> {
   }
 }
 
-class HeroVideo extends ConsumerWidget {
-  final String assetPath;
 
-  const HeroVideo({super.key, required this.assetPath});
+final videoInitializedProvider = FutureProvider<void>((ref) async {
+  final controller = VideoPlayerController.networkUrl(Uri.parse(
+    'https://file-fetcher-api.navodiths.workers.dev/download?key=Hero.mp4',
+  ));
+  await controller.initialize();
+  controller.setLooping(true);
+  controller.setVolume(0);
+  controller.play();
+  ref.read(videoControllerProvider.notifier).setController(controller);
+});
+
+class HeroVideo extends ConsumerWidget {
+  const HeroVideo({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(videoControllerProvider);
+    final initStatus = ref.watch(videoInitializedProvider);
 
-    if (controller == null) {
-      return FutureBuilder(
-        future: ref.read(videoControllerProvider.notifier).initialize(assetPath),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            final controller = ref.watch(videoControllerProvider);
-            return _buildStretchedVideo(controller!);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      );
-    }
-
-    return _buildStretchedVideo(controller);
+    return initStatus.when(
+      data: (_) {
+        if (controller == null) return const SizedBox();
+        return _buildStretchedVideo(controller);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error loading video: $e')),
+    );
   }
 
   Widget _buildStretchedVideo(VideoPlayerController controller) {
     return SizedBox.expand(
       child: FittedBox(
-        fit: BoxFit.cover, // Stretch + crop if needed
+        fit: BoxFit.cover,
         child: SizedBox(
           width: controller.value.size.width,
           height: controller.value.size.height,
@@ -85,4 +82,3 @@ class HeroVideo extends ConsumerWidget {
     );
   }
 }
-

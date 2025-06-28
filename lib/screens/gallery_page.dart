@@ -29,9 +29,14 @@ class GalleryPage extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          'GALLERY',
-          style: headerTextStyle,
+        Container(
+          width: width*0.73,
+              color: Theme.of(context).colorScheme.surface,
+          child: Text(
+            'GALLERY',
+            style: headerTextStyle,
+                   textAlign: TextAlign.center,
+          ),
         ),
         Expanded(
           child: GridView.builder(

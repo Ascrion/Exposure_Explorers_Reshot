@@ -372,7 +372,7 @@ class HomePageContent extends HookConsumerWidget {
 
     return Stack(
       children: [
-        const HeroVideo(assetPath: 'https://file-fetcher-api.navodiths.workers.dev/download?key=Hero.mp4'),
+        const HeroVideo(),
         Center(
           child: Text(
             'Exposure Explorers \n is the official \n Photography & Videography \n Club of NIT Goa',
@@ -526,6 +526,7 @@ class Menu extends ConsumerWidget {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         for (final label in [
           'HOME',
@@ -543,6 +544,7 @@ class Menu extends ConsumerWidget {
             defaultBG: defaultBG,
             hoverColor: hoverColor,
             context: context,
+          
           ),
       ],
     );
@@ -602,7 +604,7 @@ class _NavItemState extends State<_NavItem> {
             style: Theme.of(widget.context)
                 .textTheme
                 .labelLarge
-                ?.copyWith(color: color),
+                ?.copyWith(color: color),textAlign: TextAlign.center,
           ),
         ),
       ),

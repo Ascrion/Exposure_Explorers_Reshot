@@ -84,11 +84,11 @@ Future<bool> updateFileDB(FileRow file) async {
   return res.statusCode == 200;
 }
 
-Future<bool> deleteFileDB(int id) async {
+Future<bool> deleteFileDB(String name) async {
   final res = await http.post(
     Uri.parse('$baseUrl/files-delete'),
     headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'id': id}),
+    body: jsonEncode({'name': name}),
   );
   return res.statusCode == 200;
 }
