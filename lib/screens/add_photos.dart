@@ -109,7 +109,7 @@ class _LoginPageState extends ConsumerState<AddPhotos> {
                       ),
                       TextField(
                         decoration: InputDecoration(
-                            labelText: 'Event',
+                            labelText: 'Event/TEAM/HOF',
                             floatingLabelStyle: labelTextStyle,
                             labelStyle: labelTextStyle),
                         onChanged: (val) => event = val,

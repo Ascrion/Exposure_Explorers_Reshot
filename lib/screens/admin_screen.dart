@@ -3,6 +3,7 @@ import 'package:exposure_explorer_reshot/screens/edit_photos.dart';
 import 'package:exposure_explorer_reshot/services/file_photo_bucket_connect.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import '../services/file_tracker_db.dart';
 import '../screens/add_photos.dart';
 
@@ -93,53 +94,52 @@ class AdminHomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return LayoutBuilder(builder: (context, constraints) {
       return SizedBox(
-          child: SingleChildScrollView(
-              child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            title: Text(
-              '  Admin Settings:',
-              style: headerTextStyle,
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.event_note_rounded),
-            title: Text(
-              'Photos',
-              style: subheaderTextStyle,
-            ),
-            subtitle: Text('Choose Hero Photos for each event'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () =>
-                ref.read(adminPageChoice.notifier).state = 'PhotoConfig',
-          ),
-          // ListTile(
-          //   leading: Icon(Icons.contact_phone_rounded),
-          //   title: Text(
-          //     'Contact',
-          //     style: subheaderTextStyle,
-          //   ),
-          //   subtitle: Text('Change Contact and About Us'),
-          //   trailing: Icon(Icons.arrow_forward),
-          //   onTap: () =>
-          //       ref.read(adminPageChoice.notifier).state = 'ContactConfig',
-          // ),
-          // ListTile(
-          //   leading: Icon(Icons.settings),
-          //   title: Text(
-          //     'Config',
-          //     style: subheaderTextStyle,
-          //   ),
-          //   subtitle: Text('Change G-Drive links for different events.'),
-          //   trailing: Icon(Icons.arrow_forward),
-          //   onTap: () {
-          //     ref.read(adminPageChoice.notifier).state = 'GDriveConfig';
-//             },
-//           ),
-        ],
-      )));
+          child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      title: Text(
+          '  Admin Settings:',
+          style: headerTextStyle,
+                      ),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.event_note_rounded),
+                      title: Text(
+          'Photos',
+          style: subheaderTextStyle,
+                      ),
+                      subtitle: Text('Choose Hero Photos for each event'),
+                      trailing: Icon(Icons.arrow_forward),
+                      onTap: () =>
+            ref.read(adminPageChoice.notifier).state = 'PhotoConfig',
+                    ),
+                    // ListTile(
+                    //   leading: Icon(Icons.contact_phone_rounded),
+                    //   title: Text(
+                    //     'Contact',
+                    //     style: subheaderTextStyle,
+                    //   ),
+                    //   subtitle: Text('Change Contact and About Us'),
+                    //   trailing: Icon(Icons.arrow_forward),
+                    //   onTap: () =>
+                    //       ref.read(adminPageChoice.notifier).state = 'ContactConfig',
+                    // ),
+                    // ListTile(
+                    //   leading: Icon(Icons.settings),
+                    //   title: Text(
+                    //     'Config',
+                    //     style: subheaderTextStyle,
+                    //   ),
+                    //   subtitle: Text('Change G-Drive links for different events.'),
+                    //   trailing: Icon(Icons.arrow_forward),
+                    //   onTap: () {
+                    //     ref.read(adminPageChoice.notifier).state = 'GDriveConfig';
+          //             },
+          //           ),
+                  ],
+                ));
     });
   }
 }
@@ -166,398 +166,280 @@ class PhotoConfig extends ConsumerWidget {
 
     return DefaultTextStyle(
       style: bodyTextStyle,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () =>
-                      ref.read(adminPageChoice.notifier).state = '',
-                  icon: Icon(Icons.arrow_back),
-                ),
-                Text('Photos', style: headerTextStyle),
-              ],
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () =>
+                        ref.read(adminPageChoice.notifier).state = '',
+                    icon: Icon(Icons.arrow_back),
+                  ),
+                  Text('Photos', style: headerTextStyle),
+                ],
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 150, // set width
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ref.read(adminPageChoice.notifier).state = 'AddPhotos';
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4)),
+                        elevation: 4,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                      child: Text(
+                        'Add Photos',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  SizedBox(
+                    width: 150, // set width
+                    child: ElevatedButton(
+                      onPressed: enableSaveButton
+                          ? () => deletePhoto(deleteList, ref)
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        elevation: 4,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                      child: Text(
+                        'SAVE',
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: enableSaveButton == false
+                                  ? Theme.of(context).colorScheme.surface
+                                  : Theme.of(context).colorScheme.inverseSurface,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ]),
+            SizedBox(height: 10),
+            DefaultTextStyle(
+              style: titleStyle,
+              textAlign: TextAlign.center,
+              child: LayoutBuilder(builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                return Column(children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: width * 0.4,
+                        child: Text('Image Details'),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text('Event'),
+                            Text('Gallery#'),
+                            Text('Event#'),
+                            Text('Storage'),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  FileManager(bodyTextStyle),
+                ]);
+              }),
             ),
-            Row(
-              children: [
-                SizedBox(
-                  width: 150, // set width
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ref.read(adminPageChoice.notifier).state = 'AddPhotos';
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4)),
-                      elevation: 4,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    ),
-                    child: Text(
-                      'Add Photos',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 20,
-                ),
-                SizedBox(
-                  width: 150, // set width
-                  child: ElevatedButton(
-                    onPressed: enableSaveButton
-                        ? () => deletePhoto(deleteList, ref)
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      elevation: 4,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    ),
-                    child: Text(
-                      'SAVE',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: enableSaveButton == false
-                                ? Theme.of(context).colorScheme.surface
-                                : Theme.of(context).colorScheme.inverseSurface,
-                          ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ]),
-          SizedBox(height: 10),
-          DefaultTextStyle(
-            style: titleStyle,
-            textAlign: TextAlign.center,
-            child: LayoutBuilder(builder: (context, constraints) {
-              final width = constraints.maxWidth;
-              return Column(children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: width * 0.4,
-                      child: Text('Image Details'),
-                    ),
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Text('Event'),
-                          Text('Gallery#'),
-                          Text('Event#'),
-                          Text('Storage'),
-                          Text('Delete'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                FileManager(bodyTextStyle),
-              ]);
-            }),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class FileManager extends ConsumerWidget {
+class FileManager extends HookConsumerWidget {
   final dynamic bodyTextStyle;
   const FileManager(this.bodyTextStyle, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+        // Store file tracker db in db only when first launced to avoid multiple d1 reads
+    useEffect(() {
+      retrieveFiles(ref);
+      return null;
+    }, []); 
     final tempDbList = ref.watch(fileTableProvider);
     final deleteList = ref.watch(deletePhotoList);
 
     return SizedBox(
         child: DefaultTextStyle(
             style: bodyTextStyle,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: tempDbList.length,
-                    itemBuilder: (context, index) {
-                      // Data
-                      final currentRow = tempDbList[index];
-                      final id = currentRow.id;
-                      final name = currentRow.name;
-                      //The download URL
-                      final fileURL = currentRow.fileURL;
-                      // Check if current photo [id,name] in delete list
-                      bool isIdInDeleteList = deleteList.any(
-                        (element) => element[0] == id && element[1] == name,
-                      );
-                      return LayoutBuilder(builder: (context, constraints) {
-                        final width = constraints.maxWidth;
-                        return Column(
-                          children: [
-                            Container(
-                                color: Theme.of(context).colorScheme.surface,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    SizedBox(
-                                      width: width * 0.4,
-                                      child: Row(
-                                        children: [
-                                          Image.network(fileURL,
-                                              height: 80, width: 80),
-                                          SizedBox(width: 8),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    'Name: ${currentRow.name}'), //immutable as referenced by r2
-                                                Text(
-                                                  'Date: ${currentRow.date}',
-                                                  style: bodyTextStyle,
-                                                ),
-
-                                                Text(
-                                                  'Description: ${currentRow.description}',
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 2,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Text(
-                                            currentRow.event,
-                                          ),
-                                          SizedBox(
-                                            width: width * 0.01,
-                                          ), // For alignment
-                                          Text(currentRow.galleryOrder
-                                              .toString()),
-                                          SizedBox(
-                                            width: width * 0.01,
-                                          ),
-                                          Text(currentRow.eventsOrder
-                                              .toString()),
-                                          SizedBox(
-                                            width: width * 0.01,
-                                          ),
-                                          Text(currentRow.filesStorage
-                                              .toStringAsPrecision(3)),
-                                          Row(
+            child: Column(
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                   //physics: NeverScrollableScrollPhysics(),
+                  itemCount: tempDbList.length,
+                  itemBuilder: (context, index) {
+                    // Data
+                    final currentRow = tempDbList[index];
+                    final id = currentRow.id;
+                    final name = currentRow.name;
+                    //The download URL
+                    final fileURL = currentRow.fileURL;
+                    // Check if current photo [id,name] in delete list
+                    bool isIdInDeleteList = deleteList.any(
+                      (element) => element[0] == id && element[1] == name,
+                    );
+                    return LayoutBuilder(builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      return Column(
+                        children: [
+                          Container(
+                              color: Theme.of(context).colorScheme.surface,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  SizedBox(
+                                    width: width * 0.4,
+                                    child: Row(
+                                      children: [
+                                        Image.network(fileURL,
+                                            height: 80, width: 80),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              IconButton(
-                                                  onPressed: () {
-                                                    ref
-                                                        .read(adminPageChoice
-                                                            .notifier)
-                                                        .state = 'EditPhoto';
-                                                    ref
-                                                        .read(editingRowProvider
-                                                            .notifier)
-                                                        .state = currentRow;
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.edit,
-                                                    color: Colors.amber,
-                                                  )),
-                                              IconButton(
-                                                onPressed: () {
-                                                  final currentList = [
-                                                    ...ref.read(deletePhotoList)
-                                                  ];
-                                                  if (isIdInDeleteList) {
-                                                    currentList.removeWhere(
-                                                        (e) =>
-                                                            e[0] == id &&
-                                                            e[1] == name);
-                                                  } else {
-                                                    currentList.add([id, name]);
-                                                  }
-                                                  ref
-                                                      .read(deletePhotoList
-                                                          .notifier)
-                                                      .state = currentList;
-                                                },
-                                                icon: isIdInDeleteList == true
-                                                    ? Icon(Icons.undo,
-                                                        color: const Color
-                                                            .fromARGB(
-                                                            255, 76, 220, 28))
-                                                    : Icon(Icons.delete_forever,
-                                                        color: Colors
-                                                            .red.shade300),
+                                              Text(
+                                                  'Name: ${currentRow.name}'), //immutable as referenced by r2
+                                              Text(
+                                                'Date: ${currentRow.date}',
+                                                style: bodyTextStyle,
+                                              ),
+            
+                                              Text(
+                                                'Description: ${currentRow.description}',
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                                maxLines: 2,
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                )),
-                            SizedBox(
-                              height: 20,
-                            )
-                          ],
-                        );
-                      });
-                    },
-                  )
-                ],
-              ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Text(
+                                          currentRow.event,
+                                        ),
+                                        SizedBox(
+                                          width: width * 0.01,
+                                        ), // For alignment
+                                        Text(currentRow.galleryOrder
+                                            .toString()),
+                                        SizedBox(
+                                          width: width * 0.01,
+                                        ),
+                                        Text(currentRow.eventsOrder
+                                            .toString()),
+                                        SizedBox(
+                                          width: width * 0.01,
+                                        ),
+                                        Text(currentRow.filesStorage
+                                            .toStringAsPrecision(3)),
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                                onPressed: () {
+                                                  ref
+                                                      .read(adminPageChoice
+                                                          .notifier)
+                                                      .state = 'EditPhoto';
+                                                  ref
+                                                      .read(editingRowProvider
+                                                          .notifier)
+                                                      .state = currentRow;
+                                                },
+                                                icon: Icon(
+                                                  Icons.edit,
+                                                  color: Colors.amber,
+                                                )),
+                                            IconButton(
+                                              onPressed: () {
+                                                final currentList = [
+                                                  ...ref.read(deletePhotoList)
+                                                ];
+                                                if (isIdInDeleteList) {
+                                                  currentList.removeWhere(
+                                                      (e) =>
+                                                          e[0] == id &&
+                                                          e[1] == name);
+                                                } else {
+                                                  currentList.add([id, name]);
+                                                }
+                                                ref
+                                                    .read(deletePhotoList
+                                                        .notifier)
+                                                    .state = currentList;
+                                              },
+                                              icon: isIdInDeleteList == true
+                                                  ? Icon(Icons.undo,
+                                                      color: const Color
+                                                          .fromARGB(
+                                                          255, 76, 220, 28))
+                                                  : Icon(Icons.delete_forever,
+                                                      color: Colors
+                                                          .red.shade300),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )),
+                          SizedBox(
+                            height: 20,
+                          )
+                        ],
+                      );
+                    });
+                  },
+                )
+              ],
             )));
   }
 }
-
-// class ContactConfig extends ConsumerWidget {
-//   const ContactConfig({super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return Text('ContactConfig');
-//   }
-// }
-
-// class GDriveConfig extends HookConsumerWidget {
-//   final dynamic headerTextStyle;
-//   final dynamic subheaderTextStyle;
-//   final dynamic bodyTextStyle;
-
-//   const GDriveConfig(
-//       this.headerTextStyle, this.subheaderTextStyle, this.bodyTextStyle,
-//       {super.key});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//   extractEventlist(ref);
-// });
-
-//     final events = ref.watch(eventsProvider);
-//     final eventsDataList = ref.watch(eventsDataProvider);
-//     bool enableSaveButton = false;
-//     final width = MediaQuery.of(context).size.width;
-//     return Column(
-//       children: [
-//         // Header
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             Row(
-//               children: [
-//                 IconButton(
-//                   onPressed: () =>
-//                       ref.read(adminPageChoice.notifier).state = '',
-//                   icon: Icon(Icons.arrow_back),
-//                 ),
-//                 Text('Photos', style: headerTextStyle),
-//               ],
-//             ),
-//             SizedBox(
-//               width: 150, // set width
-//               child: ElevatedButton(
-//                 onPressed: enableSaveButton ? () {} : null,
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: Theme.of(context).colorScheme.surface,
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(4),
-//                   ),
-//                   elevation: 4,
-//                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-//                 ),
-//                 child: Text(
-//                   'SAVE',
-//                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-//                         color: enableSaveButton == false
-//                             ? Theme.of(context).colorScheme.surface
-//                             : Theme.of(context).colorScheme.inverseSurface,
-//                       ),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//         Container(
-//           color: Theme.of(context).colorScheme.primary,
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//             children: [
-//               Text(
-//                 'Event',
-//                 style: bodyTextStyle,
-//               ),
-//               SizedBox(width: width * 0.1),
-//               Text(
-//                 'G-Drive Link',
-//                 style: bodyTextStyle,
-//               ),
-//               SizedBox(width: width * 0.1),
-//               Text(
-//                 'Enabled',
-//                 style: bodyTextStyle,
-//               ),
-//             ],
-//           ),
-//         ),
-//         ListView.builder(
-//           shrinkWrap: true,
-//           // physics: NeverScrollableScrollPhysics()
-//           itemCount: events.length,
-//           itemBuilder: (context, index) {
-//             final event = events[index];
-//             // Get event data, if doesnt exist create new data for that event
-//             try {
-//               receivetEventConfig(event, ref);
-//             } catch (e) {
-//               insertEventConfig({'gDriveLink': '', 'isEnabled': false}, event);
-//               receivetEventConfig(event, ref);
-//             }
-//             final dataIndex =
-//                 eventsDataList.indexWhere((e) => e[0] == events[index]);
-//             final eventsData = eventsDataList[dataIndex];
-//             return Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//               children: [
-//                 Text(events[index]),
-//                 SizedBox(width: width * 0.1),
-//                 Text(eventsData[1]),
-//                 SizedBox(width: width * 0.1),
-//                 Text(eventsData[2]),
-//               ],
-//             );
-//           },
-//         )
-//       ],
-//     );
-//   }
-// }
 
 // Delete Photo
 Future<void> deletePhoto(List<List<dynamic>> deleteList, WidgetRef ref) async {

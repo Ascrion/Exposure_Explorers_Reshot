@@ -5,8 +5,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'admin_screen.dart';
+import 'gallery_page.dart';
+import 'events_page.dart';
+import 'team_page.dart';
+import 'hof_page.dart';
 import '../services/video_player.dart';
-import '../services/file_tracker_db.dart';
 
 final currentPage = StateProvider<String>((ref) => 'HOME');
 final exposureSlider = StateProvider<double>((ref) => 0.0);
@@ -26,12 +29,6 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
-    // Store file tracker db in db only when first launced to avoid multiple d1 reads
-    useEffect(() {
-      retrieveFiles(ref);
-      return null;
-    }, []); 
 
     return Scaffold(
       body: LayoutBuilder(
@@ -74,7 +71,8 @@ class LeftSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final page = ref.watch(currentPage);
     final height = MediaQuery.of(context).size.height;
-    final Uri url = Uri.parse('https://www.nitgoa.ac.in/');
+    final Uri nitgUrl = Uri.parse('https://www.nitgoa.ac.in/');
+    final Uri instaUrl = Uri.parse('https://www.instagram.com/exposure.explorers_nitg/');
     // to control the home video
     final isPlaying = ref.watch(isVideoPlayingProvider);
 
@@ -112,11 +110,11 @@ class LeftSidebar extends ConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () async {
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url,
+                    if (await canLaunchUrl(nitgUrl)) {
+                      await launchUrl(nitgUrl,
                           mode: LaunchMode.externalApplication);
                     } else {
-                      throw 'Could not launch $url';
+                      throw 'Could not launch $nitgUrl';
                     }
                     // ignore: use_build_context_synchronously
                     Navigator.pop(context);
@@ -131,6 +129,45 @@ class LeftSidebar extends ConsumerWidget {
         },
         child: Image.asset(
           'assets/images/NITG_White.png',
+          width: 45,
+          height: 45,
+        ),
+      ),    InkWell(
+        onTap: () async {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text('Do you want to be redirected to Exposure Explorer''s Instagram Page?',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSecondary)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('No',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.secondary)),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    if (await canLaunchUrl(instaUrl)) {
+                      await launchUrl(instaUrl,
+                          mode: LaunchMode.externalApplication);
+                    } else {
+                      throw 'Could not launch $instaUrl';
+                    }
+                    // ignore: use_build_context_synchronously
+                    Navigator.pop(context);
+                  },
+                  child: Text('Yes',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSecondary)),
+                ),
+              ],
+            ),
+          );
+        },
+        child: Image.asset(
+          'assets/icons/instagram_icon.png',
           width: 45,
           height: 45,
         ),
@@ -161,7 +198,7 @@ class LeftSidebar extends ConsumerWidget {
             : SizedBox(),
       ),
       SizedBox(
-        height: height * 0.5,
+        height: height * 0.4,
       ),
       IconButton(
         onPressed: () {
@@ -243,6 +280,18 @@ class CenterMain extends ConsumerWidget {
       return UserPageContent();
     } else if (page == 'ADMIN'){
       return AdminPage();
+    }else if (page == 'GALLERY'){
+      return GalleryPageContent();
+    }else if (page == 'EVENTS'){
+      return EventsPageContent();
+    }else if (page == 'EVENT PAGE'){
+      final currentEventPageData = ref.watch(currentEventPageDataProvider);
+      return CurrentEventPage(currentEventPageData[0], currentEventPageData[1],currentEventPageData[2],currentEventPageData[3],currentEventPageData[4]);
+    }else if (page == 'TEAM'){
+      return TeamPageContent();
+    }
+    else if (page == 'HALL OF FAME'){
+      return HOFPageContent();
     }
     else {
       return Stack(
@@ -263,6 +312,44 @@ class UserPageContent extends ConsumerWidget {
     return LoginPage();
   }
 }
+
+class GalleryPageContent extends ConsumerWidget {
+  const GalleryPageContent({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GalleryPage();
+  }
+}
+
+class EventsPageContent extends ConsumerWidget {
+  const EventsPageContent({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return EventsPage();
+  }
+}
+
+class TeamPageContent extends ConsumerWidget {
+  const TeamPageContent({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return TeamPage();
+  }
+}
+
+class HOFPageContent extends ConsumerWidget {
+  const HOFPageContent({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return HofPage();
+  }
+}
+
+
 
 class HomePageContent extends HookConsumerWidget {
   const HomePageContent({super.key});
@@ -446,7 +533,6 @@ class Menu extends ConsumerWidget {
           'EVENTS',
           'HALL OF FAME',
           'TEAM',
-          'CONTACT'
         ])
           _NavItem(
             label: label,
