@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import '../services/file_tracker_db.dart';
 import '../screens/add_photos.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 // To choose setting pane
 final adminPageChoice = StateProvider<String>((ref) => '');
@@ -67,14 +68,12 @@ class PageSelector extends ConsumerWidget {
     switch (page) {
       case 'PhotoConfig':
         return PhotoConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
-      // case 'ContactConfig':
-      //   return ContactConfig();
-      // case 'GDriveConfig':
-      //   return GDriveConfig(headerTextStyle, subheaderTextStyle, bodyTextStyle);
       case 'AddPhotos':
         return AddPhotos();
       case 'EditPhoto':
         return EditPhoto();
+      case 'Help':
+        return Help(headerTextStyle!, subheaderTextStyle!, bodyTextStyle!);
       default:
         return AdminHomePage(
             headerTextStyle, subheaderTextStyle, bodyTextStyle);
@@ -95,54 +94,135 @@ class AdminHomePage extends ConsumerWidget {
     return LayoutBuilder(builder: (context, constraints) {
       return SizedBox(
           child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ListTile(
-                      title: Text(
-          '  Admin Settings:',
-          style: headerTextStyle,
-                      ),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.event_note_rounded),
-                      title: Text(
-          'Photos',
-          style: subheaderTextStyle,
-                      ),
-                      subtitle: Text('Choose Hero Photos for each event'),
-                      trailing: Icon(Icons.arrow_forward),
-                      onTap: () =>
-            ref.read(adminPageChoice.notifier).state = 'PhotoConfig',
-                    ),
-                    // ListTile(
-                    //   leading: Icon(Icons.contact_phone_rounded),
-                    //   title: Text(
-                    //     'Contact',
-                    //     style: subheaderTextStyle,
-                    //   ),
-                    //   subtitle: Text('Change Contact and About Us'),
-                    //   trailing: Icon(Icons.arrow_forward),
-                    //   onTap: () =>
-                    //       ref.read(adminPageChoice.notifier).state = 'ContactConfig',
-                    // ),
-                    // ListTile(
-                    //   leading: Icon(Icons.settings),
-                    //   title: Text(
-                    //     'Config',
-                    //     style: subheaderTextStyle,
-                    //   ),
-                    //   subtitle: Text('Change G-Drive links for different events.'),
-                    //   trailing: Icon(Icons.arrow_forward),
-                    //   onTap: () {
-                    //     ref.read(adminPageChoice.notifier).state = 'GDriveConfig';
-          //             },
-          //           ),
-                  ],
-                ));
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            title: Text(
+              '  Admin Settings:',
+              style: headerTextStyle,
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.event_note_rounded),
+            title: Text(
+              'Photos',
+              style: subheaderTextStyle,
+            ),
+            subtitle: Text('Choose Hero Photos for each event'),
+            trailing: Icon(Icons.arrow_forward),
+            onTap: () =>
+                ref.read(adminPageChoice.notifier).state = 'PhotoConfig',
+          ),
+          ListTile(
+            leading: Icon(Icons.event_note_rounded),
+            title: Text(
+              'Admin Help',
+              style: subheaderTextStyle,
+            ),
+            subtitle: Text('Documentation on using the admin page'),
+            trailing: Icon(Icons.arrow_forward),
+            onTap: () => ref.read(adminPageChoice.notifier).state = 'Help',
+          ),
+        ],
+      ));
     });
   }
 }
+
+class Help extends ConsumerWidget {
+  final TextStyle headerTextStyle;
+  final TextStyle subheaderTextStyle;
+  final TextStyle bodyTextStyle;
+
+  const Help(this.headerTextStyle, this.subheaderTextStyle, this.bodyTextStyle, {super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => ref.read(adminPageChoice.notifier).state = '',
+                  icon: const Icon(Icons.arrow_back),
+                ),
+                Text('Admin Help', style: headerTextStyle),
+              ],
+            ),
+            Expanded(
+              child: Markdown(
+                data: _helpMarkdown,
+                styleSheet: MarkdownStyleSheet(
+                  h1: headerTextStyle,
+                  h2: subheaderTextStyle,
+                  p: bodyTextStyle,
+                  strong: bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+                  listBullet: subheaderTextStyle,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+const String _helpMarkdown = """ ## Basic Image Details:  
+Refer to the *Team* and *Hall of Fame* sections below for specific instructions.
+
+Each image has the following fields:
+
+- **Name**: Derived from the file name. Cannot be changed. *(Required)*  
+- **Date**: The date the image was captured.  
+- **Description**: A brief description of the image.  
+- **Event**: The event the photo belongs to. *(Required)*  
+- **Gallery #**: Determines the position of the photo in the main gallery. Must be > 0 for the photo to appear.  
+- **Event #**: Determines the photo’s position within its specific event. Must be > 0 for visibility.  
+- **Storage**: File size, automatically extracted.
+
+## Adding Photos to Gallery / Event Section:
+
+- Click the **Add Photos** button on the File Manager page.  
+- Supported formats: **.jpg**, **.png**  
+- Maximum size: **10MB per photo**, total size must not exceed **500MB**.  
+- **Event** is mandatory.  
+- **Gallery #** and **Event #** can be edited later (see Editing section).  
+- Press **Submit** after uploading.
+
+## Adding Photos to Team:
+
+- Follow the same steps as adding a gallery photo.  
+- In the **Event** field, enter: **TEAM** (in **all caps**).  
+- In the **Date** field, specify the **position** (e.g., President, Coordinator).  
+- Use the **Description** to mention team member names and details.  
+- Press **Submit** once done.
+
+## Adding Photos to Hall of Fame:
+
+- Same as above.  
+- In the **Event** field, enter: **HOF** (in **all caps**).  
+- In the **Date** field, mention the date the photo was captured.  
+- Use the **Description** to include the **Photographer’s name and details**.  
+- Press **Submit** once done.
+
+## Editing Photos:
+
+- Click the  **Edit** button next to the photo.  
+- Existing values will be pre-filled.  
+- Modify required fields.  
+- Press **Submit** to save changes.
+
+## Deleting Photos:
+
+- Click the  **Delete** button beside the photo.  
+- To undo a selection before deletion, click the **Undo** button.  
+- Press **Save** to confirm deletion.  
+- Once deleted, images **cannot be restored**.
+""";
 
 class PhotoConfig extends ConsumerWidget {
   final dynamic headerTextStyle;
@@ -178,7 +258,7 @@ class PhotoConfig extends ConsumerWidget {
                         ref.read(adminPageChoice.notifier).state = '',
                     icon: Icon(Icons.arrow_back),
                   ),
-                  Text('Photos', style: headerTextStyle),
+                  Text('File Manager', style: headerTextStyle),
                 ],
               ),
               Row(
@@ -200,7 +280,10 @@ class PhotoConfig extends ConsumerWidget {
                       ),
                       child: Text(
                         'Add Photos',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium
+                            ?.copyWith(
                               color: Theme.of(context).colorScheme.secondary,
                             ),
                       ),
@@ -226,11 +309,14 @@ class PhotoConfig extends ConsumerWidget {
                       ),
                       child: Text(
                         'SAVE',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: enableSaveButton == false
-                                  ? Theme.of(context).colorScheme.surface
-                                  : Theme.of(context).colorScheme.inverseSurface,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: enableSaveButton == false
+                                      ? Theme.of(context).colorScheme.surface
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .inverseSurface,
+                                ),
                       ),
                     ),
                   ),
@@ -285,11 +371,11 @@ class FileManager extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-        // Store file tracker db in db only when first launced to avoid multiple d1 reads
+    // Store file tracker db in db only when first launced to avoid multiple d1 reads
     useEffect(() {
       retrieveFiles(ref);
       return null;
-    }, []); 
+    }, []);
     final tempDbList = ref.watch(fileTableProvider);
     final deleteList = ref.watch(deletePhotoList);
 
@@ -300,7 +386,7 @@ class FileManager extends HookConsumerWidget {
               children: [
                 ListView.builder(
                   shrinkWrap: true,
-                   //physics: NeverScrollableScrollPhysics(),
+                  //physics: NeverScrollableScrollPhysics(),
                   itemCount: tempDbList.length,
                   itemBuilder: (context, index) {
                     // Data
@@ -341,11 +427,10 @@ class FileManager extends HookConsumerWidget {
                                                 'Date: ${currentRow.date}',
                                                 style: bodyTextStyle,
                                               ),
-            
+
                                               Text(
                                                 'Description: ${currentRow.description}',
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                                 maxLines: 2,
                                               ),
                                             ],
@@ -365,13 +450,12 @@ class FileManager extends HookConsumerWidget {
                                         SizedBox(
                                           width: width * 0.01,
                                         ), // For alignment
-                                        Text(currentRow.galleryOrder
-                                            .toString()),
+                                        Text(
+                                            currentRow.galleryOrder.toString()),
                                         SizedBox(
                                           width: width * 0.01,
                                         ),
-                                        Text(currentRow.eventsOrder
-                                            .toString()),
+                                        Text(currentRow.eventsOrder.toString()),
                                         SizedBox(
                                           width: width * 0.01,
                                         ),
@@ -400,10 +484,9 @@ class FileManager extends HookConsumerWidget {
                                                   ...ref.read(deletePhotoList)
                                                 ];
                                                 if (isIdInDeleteList) {
-                                                  currentList.removeWhere(
-                                                      (e) =>
-                                                          e[0] == id &&
-                                                          e[1] == name);
+                                                  currentList.removeWhere((e) =>
+                                                      e[0] == id &&
+                                                      e[1] == name);
                                                 } else {
                                                   currentList.add([id, name]);
                                                 }
@@ -414,12 +497,12 @@ class FileManager extends HookConsumerWidget {
                                               },
                                               icon: isIdInDeleteList == true
                                                   ? Icon(Icons.undo,
-                                                      color: const Color
-                                                          .fromARGB(
-                                                          255, 76, 220, 28))
+                                                      color:
+                                                          const Color.fromARGB(
+                                                              255, 76, 220, 28))
                                                   : Icon(Icons.delete_forever,
-                                                      color: Colors
-                                                          .red.shade300),
+                                                      color:
+                                                          Colors.red.shade300),
                                             ),
                                           ],
                                         ),

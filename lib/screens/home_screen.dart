@@ -372,7 +372,7 @@ class HomePageContent extends HookConsumerWidget {
 
     return Stack(
       children: [
-        const HeroVideo(assetPath: 'assets/videos/Hero.mp4'),
+        const HeroVideo(assetPath: 'https://file-fetcher-api.navodiths.workers.dev/download?key=Hero.mp4'),
         Center(
           child: Text(
             'Exposure Explorers \n is the official \n Photography & Videography \n Club of NIT Goa',

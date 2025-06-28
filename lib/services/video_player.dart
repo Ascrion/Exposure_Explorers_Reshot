@@ -17,7 +17,7 @@ class VideoControllerNotifier extends StateNotifier<VideoPlayerController?> {
   VideoControllerNotifier(this._ref) : super(null);
 
   Future<void> initialize(String assetPath) async {
-    final controller = VideoPlayerController.asset(assetPath);
+    final controller = VideoPlayerController.networkUrl(Uri.parse(assetPath));
     await controller.initialize();
     controller.setLooping(true);
     controller.setVolume(0);
