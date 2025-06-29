@@ -28,7 +28,7 @@ final ThemeData customTheme = ThemeData(
 
 textTheme: TextTheme(
   headlineLarge: GoogleFonts.playfairDisplay().copyWith(
-    fontSize: 50,
+    fontSize: 40,
     fontWeight: FontWeight.w700,
     letterSpacing: 1.5,
     fontFamilyFallback: ['NotoSans'], // fallback
